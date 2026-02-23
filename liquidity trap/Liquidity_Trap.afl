@@ -1,0 +1,1023 @@
+
+// change this to the path on your machine to the shared_variables.afl file included with MabeKit
+#include "C:\Users\jerem\OneDrive\Documents\GitHub\Strategies\shared_variables.afl";
+
+FirstTradeTime = Param("First Trade Time (Minutes from Open)", 5, -330, 390, 1);
+LatestTradeTime = Param("Latest Trade Time (Minutes from Open)", 60, -330, 390, 1);
+TimedExitTimeOfDay = Param("Timed Exit Time Of Day (Minutes from Open)", 380, -330, 390, 1);
+HoldTimeMinutes = Param("Hold Time Minutes (Minutes since Entry)", 0, 0, 390, 1);
+EntryType = ParamList("Entry Type", "LONG|SHORT", 0);
+MaxTradesPerDay = Param("Max Trades Per Day Per Symbol (0 = unlimited)", 1, 0, 10, 1);
+WriteSignalFile = ParamToggle("Write MK Trade Client Signal File", "no|yes", 0);
+TradeClientSignalFile = ParamStr("MK Trade Client Signal File Path", "e:\\temp\\signal_file.csv");
+StrategyCode = ParamStr("Strategy Code", "MabeKit AFL Strategy");
+MinPrice = Param("Min Price", 0.90, 0, 50, 0.01);
+MaxPrice = Param("Max Price", 21.00, 0, 100, 0.01);
+MinGap2DaysAgo = Param("Min Gap 2 Days Ago %", 60, 0, 200, 5);
+RISK = Param("Risk Per Trade", 100, 10, 1000, 10);
+TARGET_R = Param("Target R Multiple", 6, 1, 10, 0.5);
+ExplorationFilterMode = ParamList("Exploration Filter Mode", "NONE|TRIGGER|NEAR_TRIGGER", 2);
+
+// Price range filter
+PriceInRange = C >= MinPrice AND C <= MaxPrice;
+
+// Gap 2 days ago (60% or more)
+Gap2DaysAgo = (Ref(TodayOpen, -2) - Ref(YesterdayDailyClose, -2)) / Ref(YesterdayDailyClose, -2) * 100;
+GappedUp2DaysAgo = Gap2DaysAgo >= MinGap2DaysAgo;
+
+// Inside day yesterday (H[yesterday] < H[2 days ago] AND L[yesterday] > L[2 days ago])
+InsideDay = Ref(H, -1) < Ref(H, -2) AND Ref(L, -1) > Ref(L, -2);
+
+// Above Day 2 High today
+Day2High = Ref(H, -2);
+AboveDay2High = C > Day2High;
+
+// Opening range high at 5 minutes
+OpeningRange5High = ValueWhen(MinutesSinceOpen == 5, HOD);
+
+// Basic requirements for watchlist
+BasicRequirements = PriceInRange AND GappedUp2DaysAgo AND InsideDay;
+OnTodaysWatchlist = HighestSince(newday, BasicRequirements);
+
+// Entry trigger: New HOD after 5 minutes + all conditions
+NewHighOfDay = HOD > Ref(HOD, -1);
+After5Minutes = MinutesSinceOpen > 5;
+Trigger = OnTodaysWatchlist AND AboveDay2High AND NewHighOfDay AND After5Minutes AND MinutesSinceOpen >= FirstTradeTime AND MinutesSinceOpen < LatestTradeTime;
+
+BuyPrice = Ref(HOD, -1) + 0.02;
+StopPrice = LOD - 0.02;
+InitialStopDistance = abs(BuyPrice - StopPrice);
+TargetPrice = BuyPrice + (InitialStopDistance * TARGET_R);
+PositionSize = (RISK / InitialStopDistance) * BuyPrice;
+ShortPrice = 0;
+SellPrice = 0;
+CoverPrice = 0;
+
+Buy = 0;
+Short = 0;
+Sell = 0;
+Cover = 0;
+
+MinBarCount = 0;
+MaxBarCount = LastValue( bi );
+in_trade = 0;
+in_trade_long = 0;
+in_trade_short = 0;
+trd_entry_bar = 0;
+capture_column_data = 0;
+invalid_today = 0;
+trades_today = 0;
+
+Invalid = 0; //V < 1000000; // include your bad filter threshold
+
+for( i = MinBarCount; i <= MaxBarCount; i++ )
+{
+	if( premarketopen[i] )
+	{
+		invalid_today = 0;
+		trades_today = 0;
+	}
+
+    if( in_trade )
+    {
+        exit_reason = "";
+
+        // check for timed exits
+        time_of_day_exit = TimedExitTimeOfDay > 0 AND MinutesSinceOpen[i] >= TimedExitTimeOfDay;
+        hold_time_exit = HoldTimeMinutes > 0 AND (i - trd_entry_bar) >= HoldTimeMinutes;
+        if( time_of_day_exit OR hold_time_exit OR NextIsEOD[i] )
+        {
+			if ( in_trade_long )
+			{
+				Sell[i] = 1;
+				SellPrice[i] = O[i];
+				exit_reason = "Timed Exit";
+				in_trade = 0;
+				in_trade_long = 0;
+			}
+			else if ( in_trade_short )
+			{
+				Cover[i] = 1;
+				CoverPrice[i] = O[i];
+				exit_reason = "Timed Exit";
+				in_trade = 0;
+				in_trade_short = 0;
+			}
+        }
+
+        if( in_trade_long AND L[i] <= stop_price AND !Buy[i] )
+        {
+            Sell[i] = 1;
+            SellPrice[i] = stop_price;
+            exit_reason = "Initial Stop";
+            in_trade = 0;
+            in_trade_long = 0;
+        }
+
+        if( in_trade_short AND H[i] >= stop_price AND !Short[i] )
+        {
+            Cover[i] = 1;
+            CoverPrice[i] = stop_price;
+            exit_reason = "Initial Stop";
+            in_trade = 0;
+            in_trade_short = 0;
+        }
+
+        // check for target
+        if( in_trade_long AND target_price > 0 AND H[i] > target_price AND !Buy[i] )
+        {
+            Sell[i] = 1;
+            SellPrice[i] = target_price;
+            exit_reason = "Target";
+            in_trade = 0;
+            in_trade_long = 0;
+        }
+
+        // check for target
+        if( in_trade_short AND target_price > 0 AND L[i] < target_price AND !Short[i] )
+        {
+            Cover[i] = 1;
+            CoverPrice[i] = target_price;
+            exit_reason = "Target";
+            in_trade = 0;
+            in_trade_short = 0;
+        }
+
+        if( exit_reason != "" )
+        {
+            metric_value = exit_reason
+                + "," + trd_today_gap_percent + "," + trd_yesterday_dojiness + "," + trd_volume_today
+                // START_METRIC_AREA
+                + "," + trd_MK_Price
+                + "," + trd_MK_GUD
+                + "," + trd_MK_GUP
+                + "," + trd_MK_Time
+                + "," + trd_MK_PostD
+                + "," + trd_MK_PostP
+                + "," + trd_MK_UpJan1D
+                + "," + trd_MK_UpJan1P
+                + "," + trd_MK_Up
+                + "," + trd_MK_RC
+                + "," + trd_MK_Up1
+                + "," + trd_MK_Vol5D
+                + "," + trd_MK_Vol
+                + "," + trd_MK_Vol3M
+                + "," + trd_MK_DV
+                + "," + trd_MK_TV
+                + "," + trd_MK_PV
+                + "," + trd_MK_YPV
+                + "," + trd_MK_Vol1
+                + "," + trd_MK_Vol5
+                + "," + trd_MK_Up5
+                + "," + trd_MK_Vol10
+                + "," + trd_MK_Up10
+                + "," + trd_MK_Vol15
+                + "," + trd_MK_Up15
+                + "," + trd_MK_Vol30
+                + "," + trd_MK_Up30
+                + "," + trd_MK_PMVol
+                + "," + trd_MK_ATR
+                + "," + trd_MK_TRangeD
+                + "," + trd_MK_TRangeP
+                + "," + trd_MK_Range2
+                + "," + trd_MK_Range2P
+                + "," + trd_MK_Up2
+                + "," + trd_MK_Range5
+                + "," + trd_MK_Range5P
+                + "," + trd_MK_Range10
+                + "," + trd_MK_Range10P
+                + "," + trd_MK_Range15
+                + "," + trd_MK_Range15P
+                + "," + trd_MK_VWV
+                + "," + trd_MK_VWVP
+                + "," + trd_MK_RV
+                + "," + trd_MK_Wiggle
+                + "," + trd_MK_GUR
+                + "," + trd_MK_Range30
+                + "," + trd_MK_Range30P
+                + "," + trd_MK_Range60
+                + "," + trd_MK_Range60P
+                + "," + trd_MK_Up60
+                + "," + trd_MK_Range120
+                + "," + trd_MK_Range120P
+                + "," + trd_MK_Range5D
+                + "," + trd_MK_Range5DP
+                + "," + trd_MK_Range10D
+                + "," + trd_MK_Range10DP
+                + "," + trd_MK_Range20D
+                + "," + trd_MK_Range20DP
+                + "," + trd_MK_POORP
+                + "," + trd_MK_DUp1
+                + "," + trd_MK_PUp1
+                + "," + trd_MK_DUp2
+                + "," + trd_MK_PUp2
+                + "," + trd_MK_DUp5
+                + "," + trd_MK_PUp5
+                + "," + trd_MK_DUp10
+                + "," + trd_MK_PUp10
+                + "," + trd_MK_DUp15
+                + "," + trd_MK_PUp15
+                + "," + trd_MK_DUp30
+                + "," + trd_MK_PUp30
+                + "," + trd_MK_DUp60
+                + "," + trd_MK_PUp60
+                + "," + trd_MK_DUp120
+                + "," + trd_MK_PUp120
+                + "," + trd_MK_Pivot
+                + "," + trd_MK_PivotR1
+                + "," + trd_MK_PivotS1
+                + "," + trd_MK_PivotR2
+                + "," + trd_MK_PivotS2
+                + "," + trd_MK_VWAP1
+                + "," + trd_MK_VWAP2
+                + "," + trd_MK_VWAP3
+                + "," + trd_MK_VWAP4
+                + "," + trd_MK_VWAP5
+                + "," + trd_MK_VWAP
+                + "," + trd_MK_DVWAP2
+                + "," + trd_MK_DVWAP3
+                + "," + trd_MK_DVWAP4
+                + "," + trd_MK_DVWAP5
+                + "," + trd_MK_FCD
+                + "," + trd_MK_FCP
+                + "," + trd_MK_FCR
+                + "," + trd_MK_FOD
+                + "," + trd_MK_FOP
+                + "," + trd_MK_FOR
+                + "," + trd_MK_FOW
+                + "," + trd_MK_FCDP
+                + "," + trd_MK_FCPP
+                + "," + trd_MK_U5DD
+                + "," + trd_MK_U5DP
+                + "," + trd_MK_U10DD
+                + "," + trd_MK_U10DP
+                + "," + trd_MK_U20DD
+                + "," + trd_MK_U20DP
+                + "," + trd_MK_UYD
+                + "," + trd_MK_UYP
+                + "," + trd_MK_R5M
+                + "," + trd_MK_R15M
+                + "," + trd_MK_R30M
+                + "," + trd_MK_R60M
+                + "," + trd_MK_BelowHigh
+                + "," + trd_MK_AboveLow
+                + "," + trd_MK_BelowHighPre
+                + "," + trd_MK_AboveLowPre
+                + "," + trd_MK_RD
+                + "," + trd_MK_RPD
+                + "," + trd_MK_RPM
+                + "," + trd_MK_R5D
+                + "," + trd_MK_R10D
+                + "," + trd_MK_R20D
+                + "," + trd_MK_R3MO
+                + "," + trd_MK_R6MO
+                + "," + trd_MK_R9MO
+                + "," + trd_MK_RY
+                + "," + trd_MK_R2Y
+                + "," + trd_MK_RL
+                + "," + trd_MK_RSI1
+                + "," + trd_MK_RSI2
+                + "," + trd_MK_RSI5
+                + "," + trd_MK_RSI15
+                + "," + trd_MK_RSI60
+                + "," + trd_MK_DRSI
+                + "," + trd_MK_Boll5
+                + "," + trd_MK_Boll15
+                + "," + trd_MK_Boll60
+                + "," + trd_MK_Boll
+                + "," + trd_MK_SMA200
+                + "," + trd_MK_MA8P
+                + "," + trd_MK_MA8R
+                + "," + trd_MK_MA10P
+                + "," + trd_MK_MA10R
+                + "," + trd_MK_MA20P
+                + "," + trd_MK_MA20R
+                + "," + trd_MK_MA50P
+                + "," + trd_MK_MA50R
+                + "," + trd_MK_MA200P
+                + "," + trd_MK_MA200R
+                + "," + trd_MK_2SmaLa5
+                + "," + trd_MK_2SmaLa8
+                + "," + trd_MK_2SmaLa10
+                + "," + trd_MK_2SmaLa20
+                + "," + trd_MK_2SmaLa200
+                + "," + trd_MK_5SmaLa5
+                + "," + trd_MK_5SmaLa8
+                + "," + trd_MK_5SmaLa10
+                + "," + trd_MK_5SmaLa20
+                + "," + trd_MK_5SmaLa200
+                + "," + trd_MK_15SmaLa5
+                + "," + trd_MK_15SmaLa8
+                + "," + trd_MK_15SmaLa10
+                + "," + trd_MK_15SmaLa20
+                + "," + trd_MK_15SmaLa130
+                + "," + trd_MK_15SmaLa200
+                + "," + trd_MK_60SmaLa8
+                + "," + trd_MK_60SmaLa10
+                + "," + trd_MK_60SmaLa20
+                + "," + trd_MK_60SmaLa200
+                + "," + trd_MK_2Sma8a20
+                + "," + trd_MK_5Sma8a20
+                + "," + trd_MK_15Sma8a20
+                + "," + trd_MK_60Sma8a20
+                + "," + trd_MK_2Sma20a200
+                + "," + trd_MK_5Sma20a200
+                + "," + trd_MK_15Sma20a200
+                + "," + trd_MK_60Sma20a200
+                // END_METRIC_AREA
+                ;
+            StaticVarSetText( "Ex" + Name() + DateTimeToStr( dt[i] ), metric_value );
+        }
+    }
+
+    if( EntryType == "LONG" AND Trigger[i] AND NOT in_trade AND NOT invalid_today AND ( MaxTradesPerDay == 0 OR trades_today < MaxTradesPerDay ) )
+    {
+        SignalBarIndex = i - 1;
+        if( Invalid[SignalBarIndex] )
+        {
+			invalid_today = 1;
+		}
+		else
+		{
+			Buy[i] = 1;
+			stop_price = StopPrice[i];
+			target_price = TargetPrice[i];
+			trd_entry_bar = i;
+
+			in_trade = 1;
+			in_trade_long = 1;
+			trades_today++;
+			capture_column_data = 1;
+		}
+	}
+    if( EntryType == "SHORT" AND Trigger[i] AND NOT in_trade AND NOT invalid_today AND ( MaxTradesPerDay == 0 OR trades_today < MaxTradesPerDay ) )
+    {
+        SignalBarIndex = i - 1;
+        if( Invalid[SignalBarIndex] )
+        {
+			invalid_today = 1;
+		}
+		else
+		{
+			Short[i] = 1;
+			stop_price = StopPrice[i];
+			target_price = TargetPrice[i];
+			trd_entry_bar = i;
+
+			in_trade = 1;
+			in_trade_short = 1;
+			trades_today++;
+			capture_column_data = 1;
+		}
+	}
+
+	if ( capture_column_data )
+	{
+		// define variables for metrics
+		trd_today_gap_percent = TodayGapPercent[SignalBarIndex];
+		trd_yesterday_dojiness = YesterdayDojiness[SignalBarIndex];
+		trd_volume_today = VolumeToday[SignalBarIndex];
+		// START_SIGNAL_AREA
+		trd_MK_Price = MK_Price[SignalBarIndex];
+		trd_MK_GUD = MK_GUD[SignalBarIndex];
+		trd_MK_GUP = MK_GUP[SignalBarIndex];
+		trd_MK_Time = MK_Time[SignalBarIndex];
+		trd_MK_PostD = MK_PostD[SignalBarIndex];
+		trd_MK_PostP = MK_PostP[SignalBarIndex];
+		trd_MK_UpJan1D = MK_UpJan1D[SignalBarIndex];
+		trd_MK_UpJan1P = MK_UpJan1P[SignalBarIndex];
+		trd_MK_Up = MK_Up[SignalBarIndex];
+		trd_MK_RC = MK_RC[SignalBarIndex];
+		trd_MK_Up1 = MK_Up1[SignalBarIndex];
+		trd_MK_Vol5D = MK_Vol5D[SignalBarIndex];
+		trd_MK_Vol = MK_Vol[SignalBarIndex];
+		trd_MK_Vol3M = MK_Vol3M[SignalBarIndex];
+		trd_MK_DV = MK_DV[SignalBarIndex];
+		trd_MK_TV = MK_TV[SignalBarIndex];
+		trd_MK_PV = MK_PV[SignalBarIndex];
+		trd_MK_YPV = MK_YPV[SignalBarIndex];
+		trd_MK_Vol1 = MK_Vol1[SignalBarIndex];
+		trd_MK_Vol5 = MK_Vol5[SignalBarIndex];
+		trd_MK_Up5 = MK_Up5[SignalBarIndex];
+		trd_MK_Vol10 = MK_Vol10[SignalBarIndex];
+		trd_MK_Up10 = MK_Up10[SignalBarIndex];
+		trd_MK_Vol15 = MK_Vol15[SignalBarIndex];
+		trd_MK_Up15 = MK_Up15[SignalBarIndex];
+		trd_MK_Vol30 = MK_Vol30[SignalBarIndex];
+		trd_MK_Up30 = MK_Up30[SignalBarIndex];
+		trd_MK_PMVol = MK_PMVol[SignalBarIndex];
+		trd_MK_ATR = MK_ATR[SignalBarIndex];
+		trd_MK_TRangeD = MK_TRangeD[SignalBarIndex];
+		trd_MK_TRangeP = MK_TRangeP[SignalBarIndex];
+		trd_MK_Range2 = MK_Range2[SignalBarIndex];
+		trd_MK_Range2P = MK_Range2P[SignalBarIndex];
+		trd_MK_Up2 = MK_Up2[SignalBarIndex];
+		trd_MK_Range5 = MK_Range5[SignalBarIndex];
+		trd_MK_Range5P = MK_Range5P[SignalBarIndex];
+		trd_MK_Range10 = MK_Range10[SignalBarIndex];
+		trd_MK_Range10P = MK_Range10P[SignalBarIndex];
+		trd_MK_Range15 = MK_Range15[SignalBarIndex];
+		trd_MK_Range15P = MK_Range15P[SignalBarIndex];
+		trd_MK_VWV = MK_VWV[SignalBarIndex];
+		trd_MK_VWVP = MK_VWVP[SignalBarIndex];
+		trd_MK_RV = MK_RV[SignalBarIndex];
+		trd_MK_Wiggle = MK_Wiggle[SignalBarIndex];
+		trd_MK_GUR = MK_GUR[SignalBarIndex];
+		trd_MK_Range30 = MK_Range30[SignalBarIndex];
+		trd_MK_Range30P = MK_Range30P[SignalBarIndex];
+		trd_MK_Range60 = MK_Range60[SignalBarIndex];
+		trd_MK_Range60P = MK_Range60P[SignalBarIndex];
+		trd_MK_Up60 = MK_Up60[SignalBarIndex];
+		trd_MK_Range120 = MK_Range120[SignalBarIndex];
+		trd_MK_Range120P = MK_Range120P[SignalBarIndex];
+		trd_MK_Range5D = MK_Range5D[SignalBarIndex];
+		trd_MK_Range5DP = MK_Range5DP[SignalBarIndex];
+		trd_MK_Range10D = MK_Range10D[SignalBarIndex];
+		trd_MK_Range10DP = MK_Range10DP[SignalBarIndex];
+		trd_MK_Range20D = MK_Range20D[SignalBarIndex];
+		trd_MK_Range20DP = MK_Range20DP[SignalBarIndex];
+		trd_MK_POORP = MK_POORP[SignalBarIndex];
+		trd_MK_DUp1 = MK_DUp1[SignalBarIndex];
+		trd_MK_PUp1 = MK_PUp1[SignalBarIndex];
+		trd_MK_DUp2 = MK_DUp2[SignalBarIndex];
+		trd_MK_PUp2 = MK_PUp2[SignalBarIndex];
+		trd_MK_DUp5 = MK_DUp5[SignalBarIndex];
+		trd_MK_PUp5 = MK_PUp5[SignalBarIndex];
+		trd_MK_DUp10 = MK_DUp10[SignalBarIndex];
+		trd_MK_PUp10 = MK_PUp10[SignalBarIndex];
+		trd_MK_DUp15 = MK_DUp15[SignalBarIndex];
+		trd_MK_PUp15 = MK_PUp15[SignalBarIndex];
+		trd_MK_DUp30 = MK_DUp30[SignalBarIndex];
+		trd_MK_PUp30 = MK_PUp30[SignalBarIndex];
+		trd_MK_DUp60 = MK_DUp60[SignalBarIndex];
+		trd_MK_PUp60 = MK_PUp60[SignalBarIndex];
+		trd_MK_DUp120 = MK_DUp120[SignalBarIndex];
+		trd_MK_PUp120 = MK_PUp120[SignalBarIndex];
+		trd_MK_Pivot = MK_Pivot[SignalBarIndex];
+		trd_MK_PivotR1 = MK_PivotR1[SignalBarIndex];
+		trd_MK_PivotS1 = MK_PivotS1[SignalBarIndex];
+		trd_MK_PivotR2 = MK_PivotR2[SignalBarIndex];
+		trd_MK_PivotS2 = MK_PivotS2[SignalBarIndex];
+		trd_MK_VWAP1 = MK_VWAP1[SignalBarIndex];
+		trd_MK_VWAP2 = MK_VWAP2[SignalBarIndex];
+		trd_MK_VWAP3 = MK_VWAP3[SignalBarIndex];
+		trd_MK_VWAP4 = MK_VWAP4[SignalBarIndex];
+		trd_MK_VWAP5 = MK_VWAP5[SignalBarIndex];
+		trd_MK_VWAP = MK_VWAP[SignalBarIndex];
+		trd_MK_DVWAP2 = MK_DVWAP2[SignalBarIndex];
+		trd_MK_DVWAP3 = MK_DVWAP3[SignalBarIndex];
+		trd_MK_DVWAP4 = MK_DVWAP4[SignalBarIndex];
+		trd_MK_DVWAP5 = MK_DVWAP5[SignalBarIndex];
+		trd_MK_FCD = MK_FCD[SignalBarIndex];
+		trd_MK_FCP = MK_FCP[SignalBarIndex];
+		trd_MK_FCR = MK_FCR[SignalBarIndex];
+		trd_MK_FOD = MK_FOD[SignalBarIndex];
+		trd_MK_FOP = MK_FOP[SignalBarIndex];
+		trd_MK_FOR = MK_FOR[SignalBarIndex];
+		trd_MK_FOW = MK_FOW[SignalBarIndex];
+		trd_MK_FCDP = MK_FCDP[SignalBarIndex];
+		trd_MK_FCPP = MK_FCPP[SignalBarIndex];
+		trd_MK_U5DD = MK_U5DD[SignalBarIndex];
+		trd_MK_U5DP = MK_U5DP[SignalBarIndex];
+		trd_MK_U10DD = MK_U10DD[SignalBarIndex];
+		trd_MK_U10DP = MK_U10DP[SignalBarIndex];
+		trd_MK_U20DD = MK_U20DD[SignalBarIndex];
+		trd_MK_U20DP = MK_U20DP[SignalBarIndex];
+		trd_MK_UYD = MK_UYD[SignalBarIndex];
+		trd_MK_UYP = MK_UYP[SignalBarIndex];
+		trd_MK_R5M = MK_R5M[SignalBarIndex];
+		trd_MK_R15M = MK_R15M[SignalBarIndex];
+		trd_MK_R30M = MK_R30M[SignalBarIndex];
+		trd_MK_R60M = MK_R60M[SignalBarIndex];
+		trd_MK_BelowHigh = MK_BelowHigh[SignalBarIndex];
+		trd_MK_AboveLow = MK_AboveLow[SignalBarIndex];
+		trd_MK_BelowHighPre = MK_BelowHighPre[SignalBarIndex];
+		trd_MK_AboveLowPre = MK_AboveLowPre[SignalBarIndex];
+		trd_MK_RD = MK_RD[SignalBarIndex];
+		trd_MK_RPD = MK_RPD[SignalBarIndex];
+		trd_MK_RPM = MK_RPM[SignalBarIndex];
+		trd_MK_R5D = MK_R5D[SignalBarIndex];
+		trd_MK_R10D = MK_R10D[SignalBarIndex];
+		trd_MK_R20D = MK_R20D[SignalBarIndex];
+		trd_MK_R3MO = MK_R3MO[SignalBarIndex];
+		trd_MK_R6MO = MK_R6MO[SignalBarIndex];
+		trd_MK_R9MO = MK_R9MO[SignalBarIndex];
+		trd_MK_RY = MK_RY[SignalBarIndex];
+		trd_MK_R2Y = MK_R2Y[SignalBarIndex];
+		trd_MK_RL = MK_RL[SignalBarIndex];
+		trd_MK_RSI1 = MK_RSI1[SignalBarIndex];
+		trd_MK_RSI2 = MK_RSI2[SignalBarIndex];
+		trd_MK_RSI5 = MK_RSI5[SignalBarIndex];
+		trd_MK_RSI15 = MK_RSI15[SignalBarIndex];
+		trd_MK_RSI60 = MK_RSI60[SignalBarIndex];
+		trd_MK_DRSI = MK_DRSI[SignalBarIndex];
+		trd_MK_Boll5 = MK_Boll5[SignalBarIndex];
+		trd_MK_Boll15 = MK_Boll15[SignalBarIndex];
+		trd_MK_Boll60 = MK_Boll60[SignalBarIndex];
+		trd_MK_Boll = MK_Boll[SignalBarIndex];
+		trd_MK_SMA200 = MK_SMA200[SignalBarIndex];
+		trd_MK_MA8P = MK_MA8P[SignalBarIndex];
+		trd_MK_MA8R = MK_MA8R[SignalBarIndex];
+		trd_MK_MA10P = MK_MA10P[SignalBarIndex];
+		trd_MK_MA10R = MK_MA10R[SignalBarIndex];
+		trd_MK_MA20P = MK_MA20P[SignalBarIndex];
+		trd_MK_MA20R = MK_MA20R[SignalBarIndex];
+		trd_MK_MA50P = MK_MA50P[SignalBarIndex];
+		trd_MK_MA50R = MK_MA50R[SignalBarIndex];
+		trd_MK_MA200P = MK_MA200P[SignalBarIndex];
+		trd_MK_MA200R = MK_MA200R[SignalBarIndex];
+		trd_MK_2SmaLa5 = MK_2SmaLa5[SignalBarIndex];
+		trd_MK_2SmaLa8 = MK_2SmaLa8[SignalBarIndex];
+		trd_MK_2SmaLa10 = MK_2SmaLa10[SignalBarIndex];
+		trd_MK_2SmaLa20 = MK_2SmaLa20[SignalBarIndex];
+		trd_MK_2SmaLa200 = MK_2SmaLa200[SignalBarIndex];
+		trd_MK_5SmaLa5 = MK_5SmaLa5[SignalBarIndex];
+		trd_MK_5SmaLa8 = MK_5SmaLa8[SignalBarIndex];
+		trd_MK_5SmaLa10 = MK_5SmaLa10[SignalBarIndex];
+		trd_MK_5SmaLa20 = MK_5SmaLa20[SignalBarIndex];
+		trd_MK_5SmaLa200 = MK_5SmaLa200[SignalBarIndex];
+		trd_MK_15SmaLa5 = MK_15SmaLa5[SignalBarIndex];
+		trd_MK_15SmaLa8 = MK_15SmaLa8[SignalBarIndex];
+		trd_MK_15SmaLa10 = MK_15SmaLa10[SignalBarIndex];
+		trd_MK_15SmaLa20 = MK_15SmaLa20[SignalBarIndex];
+		trd_MK_15SmaLa130 = MK_15SmaLa130[SignalBarIndex];
+		trd_MK_15SmaLa200 = MK_15SmaLa200[SignalBarIndex];
+		trd_MK_60SmaLa8 = MK_60SmaLa8[SignalBarIndex];
+		trd_MK_60SmaLa10 = MK_60SmaLa10[SignalBarIndex];
+		trd_MK_60SmaLa20 = MK_60SmaLa20[SignalBarIndex];
+		trd_MK_60SmaLa200 = MK_60SmaLa200[SignalBarIndex];
+		trd_MK_2Sma8a20 = MK_2Sma8a20[SignalBarIndex];
+		trd_MK_5Sma8a20 = MK_5Sma8a20[SignalBarIndex];
+		trd_MK_15Sma8a20 = MK_15Sma8a20[SignalBarIndex];
+		trd_MK_60Sma8a20 = MK_60Sma8a20[SignalBarIndex];
+		trd_MK_2Sma20a200 = MK_2Sma20a200[SignalBarIndex];
+		trd_MK_5Sma20a200 = MK_5Sma20a200[SignalBarIndex];
+		trd_MK_15Sma20a200 = MK_15Sma20a200[SignalBarIndex];
+		trd_MK_60Sma20a200 = MK_60Sma20a200[SignalBarIndex];
+		// END_SIGNAL_AREA
+		capture_column_data = 0;
+    }
+}
+
+NearTrigger = Ref(Trigger, -1) OR Ref(Trigger, -2) OR Ref(Trigger, 1) OR Ref(Trigger, 2);
+
+ColorCount = 20;
+DayIndex = DateNum() % ColorCount;
+hue = ( 255 * DayIndex ) / Max( 1, ColorCount-1 );
+dayBgColor = ColorHSB( hue, 90, 255 );
+
+SetOption("nodefaultcolumns", True);
+Filter = Trigger;
+if (ExplorationFilterMode == "NEAR_TRIGGER")
+{
+	Filter = Trigger OR NearTrigger;
+}
+else if (ExplorationFilterMode == "NONE")
+{
+	Filter = 1;
+}
+AddTextColumn(Name(), "Sym", Null, colorDefault, colorDefault, 50);
+AddColumn( DateTime(), "D/T", formatDateTime, colorDefault, dayBgColor, 150);
+AddColumn( MinutesSinceOpen, "MinutesSinceOpen", 1.0, colorDefault,
+    IIf( MinutesSinceOpen > 0, GetGradient( ColorRGB(235,245,235), ColorRGB(180,220,160), 0, 390, MinutesSinceOpen ),
+    GetGradient( ColorRGB(245,245,245), ColorRGB(235,245,235), -330, 0, MinutesSinceOpen )) );
+AddColumn( OnTodaysWatchlist, "OnTodaysWatchlist", 1.0 );
+AddColumn( Trigger, "Trigger", 1.0, colorDefault, IIf( Trigger, colorGreen, IIf(NearTrigger, colorLime, colorPink ) ) );
+AddColumn( O, "O", 1.2 );
+AddColumn( H, "H", 1.2 );
+AddColumn( L, "L", 1.2 );
+AddColumn( C, "C", 1.2 );
+AddColumn( V, "V", 1.0 );
+AddColumn( Buy, "Buy", 1.0 );
+AddColumn( Sell, "Sell", 1.0 );
+AddColumn(C, "Price", 1.2, colorDefault, IIf(PriceInRange, colorLime, colorPink));
+AddColumn(Gap2DaysAgo, "Gap 2D %", 1.2, colorDefault, IIf(Gap2DaysAgo >= MinGap2DaysAgo, colorLime, colorPink));
+AddColumn(InsideDay, "Inside Day", 1.0, colorDefault, IIf(InsideDay, colorLime, colorPink));
+AddColumn(Day2High, "Day2 High", 1.2);
+AddColumn(C > Day2High, "Above D2H", 1.0, colorDefault, IIf(C > Day2High, colorLime, colorPink));
+AddColumn(OpeningRange5High, "OR5 High", 1.2);
+AddColumn(HOD > Ref(HOD, -1), "New HOD", 1.0, colorDefault, IIf(HOD > Ref(HOD, -1), colorLime, colorPink));
+SetSortColumns(-2);
+
+key_for_signal = StrategyCode + "_" + Name() + "_" + NumToStr(DateNum());
+LogEntriesToday = Nz(StaticVarGet(key_for_signal));
+
+if( WriteSignalFile
+        AND LastValue( Trigger ) AND LogEntriesToday < MaxTradesPerDay
+        AND( LastValue( Buy ) OR LastValue( Short ) )
+        AND( LastValue( BuyPrice ) OR LastValue( ShortPrice ) ) )
+{
+    signal_entry_price = LastValue( BuyPrice );
+
+    if( EntryType == "SHORT" )
+    {
+        signal_entry_price = LastValue( ShortPrice );
+    }
+
+    signal_shares = LastValue( PositionSize ) / signal_entry_price;
+    signal_stop_price = LastValue( StopPrice );
+    signal_target_price = LastValue( TargetPrice );
+    signal_open_price = LastValue( O );
+    signal_close_price = LastValue( C );
+
+	Now_timestamp = Now();
+	last_bar_timestamp = DateTimeToStr(LastValue(dt));
+
+	line_to_append = Now_timestamp
+		+ "," + last_bar_timestamp
+		+ "," + Name()
+		+ "," + signal_entry_price
+		+ "," + signal_shares
+		+ "," + signal_stop_price
+		+ "," + signal_target_price
+		+ "," + signal_open_price
+		+ "," + signal_close_price
+		+ ",match\n";
+
+	// fappend is available in Amibroker 7.00 and beyond
+	fappend(TradeClientSignalFile, line_to_append);
+	LogEntriesToday = LogEntriesToday + 1;
+	StaticVarSet(key_for_signal, LogEntriesToday);
+
+	// This will play a sound when something is written to the file
+	AlertIf( True, "SOUND C:\\Windows\\Media\\chimes.WAV", "", 0 );
+}
+
+// Custom backtest code - this actually adds the columns to the trades list
+SetCustomBacktestProc( "" );
+
+if( Status( "action" ) == actionPortfolio )
+{
+    bo = GetBacktesterObject();
+    bo.Backtest( 1 ); // run default backtest procedure
+
+    for( trade = bo.GetFirstTrade(); trade; trade = bo.GetNextTrade() )
+    {
+        // this is the metric_value from the exit logic above
+        trade_metric_value = StaticVarGetText( "Ex" + trade.Symbol + DateTimeToStr( trade.ExitDateTime ) );
+        exit_reason = StrExtract( trade_metric_value, 0 );
+        trade.AddCustomMetric( "Exit Reason", exit_reason );
+        gap_percent = StrToNum( StrExtract( trade_metric_value, 1 ) );
+        trade.AddCustomMetric( "Gap Percent", gap_percent );
+        yesterday_dojiness = StrToNum( StrExtract( trade_metric_value, 2 ) );
+        trade.AddCustomMetric( "Yest Dojiness", yesterday_dojiness );
+        today_volume = StrToNum( StrExtract( trade_metric_value, 3 ) );
+        trade.AddCustomMetric( "Volume Today", today_volume, 0 );
+        // START_BACKTEST_METRIC_AREA
+        metric_MK_Price = StrToNum( StrExtract( trade_metric_value, 4 ) );
+        trade.AddCustomMetric( "MK_Price", metric_MK_Price, 2 );
+        metric_MK_GUD = StrToNum( StrExtract( trade_metric_value, 5 ) );
+        trade.AddCustomMetric( "MK_GUD", metric_MK_GUD, 2 );
+        metric_MK_GUP = StrToNum( StrExtract( trade_metric_value, 6 ) );
+        trade.AddCustomMetric( "MK_GUP", metric_MK_GUP, 2 );
+        metric_MK_Time = StrToNum( StrExtract( trade_metric_value, 7 ) );
+        trade.AddCustomMetric( "MK_Time", metric_MK_Time, 0 );
+        metric_MK_PostD = StrToNum( StrExtract( trade_metric_value, 8 ) );
+        trade.AddCustomMetric( "MK_PostD", metric_MK_PostD, 2 );
+        metric_MK_PostP = StrToNum( StrExtract( trade_metric_value, 9 ) );
+        trade.AddCustomMetric( "MK_PostP", metric_MK_PostP, 2 );
+        metric_MK_UpJan1D = StrToNum( StrExtract( trade_metric_value, 10 ) );
+        trade.AddCustomMetric( "MK_UpJan1D", metric_MK_UpJan1D, 2 );
+        metric_MK_UpJan1P = StrToNum( StrExtract( trade_metric_value, 11 ) );
+        trade.AddCustomMetric( "MK_UpJan1P", metric_MK_UpJan1P, 2 );
+        metric_MK_Up = StrToNum( StrExtract( trade_metric_value, 12 ) );
+        trade.AddCustomMetric( "MK_Up", metric_MK_Up, 0 );
+        metric_MK_RC = StrToNum( StrExtract( trade_metric_value, 13 ) );
+        trade.AddCustomMetric( "MK_RC", metric_MK_RC, 0 );
+        metric_MK_Up1 = StrToNum( StrExtract( trade_metric_value, 14 ) );
+        trade.AddCustomMetric( "MK_Up1", metric_MK_Up1, 0 );
+        metric_MK_Vol5D = StrToNum( StrExtract( trade_metric_value, 15 ) );
+        trade.AddCustomMetric( "MK_Vol5D", metric_MK_Vol5D, 0 );
+        metric_MK_Vol = StrToNum( StrExtract( trade_metric_value, 16 ) );
+        trade.AddCustomMetric( "MK_Vol", metric_MK_Vol, 0 );
+        metric_MK_Vol3M = StrToNum( StrExtract( trade_metric_value, 17 ) );
+        trade.AddCustomMetric( "MK_Vol3M", metric_MK_Vol3M, 0 );
+        metric_MK_DV = StrToNum( StrExtract( trade_metric_value, 18 ) );
+        trade.AddCustomMetric( "MK_DV", metric_MK_DV, 0 );
+        metric_MK_TV = StrToNum( StrExtract( trade_metric_value, 19 ) );
+        trade.AddCustomMetric( "MK_TV", metric_MK_TV, 0 );
+        metric_MK_PV = StrToNum( StrExtract( trade_metric_value, 20 ) );
+        trade.AddCustomMetric( "MK_PV", metric_MK_PV, 2 );
+        metric_MK_YPV = StrToNum( StrExtract( trade_metric_value, 21 ) );
+        trade.AddCustomMetric( "MK_YPV", metric_MK_YPV, 2 );
+        metric_MK_Vol1 = StrToNum( StrExtract( trade_metric_value, 22 ) );
+        trade.AddCustomMetric( "MK_Vol1", metric_MK_Vol1, 2 );
+        metric_MK_Vol5 = StrToNum( StrExtract( trade_metric_value, 23 ) );
+        trade.AddCustomMetric( "MK_Vol5", metric_MK_Vol5, 2 );
+        metric_MK_Up5 = StrToNum( StrExtract( trade_metric_value, 24 ) );
+        trade.AddCustomMetric( "MK_Up5", metric_MK_Up5, 0 );
+        metric_MK_Vol10 = StrToNum( StrExtract( trade_metric_value, 25 ) );
+        trade.AddCustomMetric( "MK_Vol10", metric_MK_Vol10, 2 );
+        metric_MK_Up10 = StrToNum( StrExtract( trade_metric_value, 26 ) );
+        trade.AddCustomMetric( "MK_Up10", metric_MK_Up10, 0 );
+        metric_MK_Vol15 = StrToNum( StrExtract( trade_metric_value, 27 ) );
+        trade.AddCustomMetric( "MK_Vol15", metric_MK_Vol15, 2 );
+        metric_MK_Up15 = StrToNum( StrExtract( trade_metric_value, 28 ) );
+        trade.AddCustomMetric( "MK_Up15", metric_MK_Up15, 0 );
+        metric_MK_Vol30 = StrToNum( StrExtract( trade_metric_value, 29 ) );
+        trade.AddCustomMetric( "MK_Vol30", metric_MK_Vol30, 2 );
+        metric_MK_Up30 = StrToNum( StrExtract( trade_metric_value, 30 ) );
+        trade.AddCustomMetric( "MK_Up30", metric_MK_Up30, 0 );
+        metric_MK_PMVol = StrToNum( StrExtract( trade_metric_value, 31 ) );
+        trade.AddCustomMetric( "MK_PMVol", metric_MK_PMVol, 2 );
+        metric_MK_ATR = StrToNum( StrExtract( trade_metric_value, 32 ) );
+        trade.AddCustomMetric( "MK_ATR", metric_MK_ATR, 2 );
+        metric_MK_TRangeD = StrToNum( StrExtract( trade_metric_value, 33 ) );
+        trade.AddCustomMetric( "MK_TRangeD", metric_MK_TRangeD, 2 );
+        metric_MK_TRangeP = StrToNum( StrExtract( trade_metric_value, 34 ) );
+        trade.AddCustomMetric( "MK_TRangeP", metric_MK_TRangeP, 2 );
+        metric_MK_Range2 = StrToNum( StrExtract( trade_metric_value, 35 ) );
+        trade.AddCustomMetric( "MK_Range2", metric_MK_Range2, 2 );
+        metric_MK_Range2P = StrToNum( StrExtract( trade_metric_value, 36 ) );
+        trade.AddCustomMetric( "MK_Range2P", metric_MK_Range2P, 2 );
+        metric_MK_Up2 = StrToNum( StrExtract( trade_metric_value, 37 ) );
+        trade.AddCustomMetric( "MK_Up2", metric_MK_Up2, 0 );
+        metric_MK_Range5 = StrToNum( StrExtract( trade_metric_value, 38 ) );
+        trade.AddCustomMetric( "MK_Range5", metric_MK_Range5, 2 );
+        metric_MK_Range5P = StrToNum( StrExtract( trade_metric_value, 39 ) );
+        trade.AddCustomMetric( "MK_Range5P", metric_MK_Range5P, 2 );
+        metric_MK_Range10 = StrToNum( StrExtract( trade_metric_value, 40 ) );
+        trade.AddCustomMetric( "MK_Range10", metric_MK_Range10, 2 );
+        metric_MK_Range10P = StrToNum( StrExtract( trade_metric_value, 41 ) );
+        trade.AddCustomMetric( "MK_Range10P", metric_MK_Range10P, 2 );
+        metric_MK_Range15 = StrToNum( StrExtract( trade_metric_value, 42 ) );
+        trade.AddCustomMetric( "MK_Range15", metric_MK_Range15, 2 );
+        metric_MK_Range15P = StrToNum( StrExtract( trade_metric_value, 43 ) );
+        trade.AddCustomMetric( "MK_Range15P", metric_MK_Range15P, 2 );
+        metric_MK_VWV = StrToNum( StrExtract( trade_metric_value, 44 ) );
+        trade.AddCustomMetric( "MK_VWV", metric_MK_VWV, 2 );
+        metric_MK_VWVP = StrToNum( StrExtract( trade_metric_value, 45 ) );
+        trade.AddCustomMetric( "MK_VWVP", metric_MK_VWVP, 2 );
+        metric_MK_RV = StrToNum( StrExtract( trade_metric_value, 46 ) );
+        trade.AddCustomMetric( "MK_RV", metric_MK_RV, 2 );
+        metric_MK_Wiggle = StrToNum( StrExtract( trade_metric_value, 47 ) );
+        trade.AddCustomMetric( "MK_Wiggle", metric_MK_Wiggle, 2 );
+        metric_MK_GUR = StrToNum( StrExtract( trade_metric_value, 48 ) );
+        trade.AddCustomMetric( "MK_GUR", metric_MK_GUR, 2 );
+        metric_MK_Range30 = StrToNum( StrExtract( trade_metric_value, 49 ) );
+        trade.AddCustomMetric( "MK_Range30", metric_MK_Range30, 2 );
+        metric_MK_Range30P = StrToNum( StrExtract( trade_metric_value, 50 ) );
+        trade.AddCustomMetric( "MK_Range30P", metric_MK_Range30P, 2 );
+        metric_MK_Range60 = StrToNum( StrExtract( trade_metric_value, 51 ) );
+        trade.AddCustomMetric( "MK_Range60", metric_MK_Range60, 2 );
+        metric_MK_Range60P = StrToNum( StrExtract( trade_metric_value, 52 ) );
+        trade.AddCustomMetric( "MK_Range60P", metric_MK_Range60P, 2 );
+        metric_MK_Up60 = StrToNum( StrExtract( trade_metric_value, 53 ) );
+        trade.AddCustomMetric( "MK_Up60", metric_MK_Up60, 0 );
+        metric_MK_Range120 = StrToNum( StrExtract( trade_metric_value, 54 ) );
+        trade.AddCustomMetric( "MK_Range120", metric_MK_Range120, 2 );
+        metric_MK_Range120P = StrToNum( StrExtract( trade_metric_value, 55 ) );
+        trade.AddCustomMetric( "MK_Range120P", metric_MK_Range120P, 2 );
+        metric_MK_Range5D = StrToNum( StrExtract( trade_metric_value, 56 ) );
+        trade.AddCustomMetric( "MK_Range5D", metric_MK_Range5D, 2 );
+        metric_MK_Range5DP = StrToNum( StrExtract( trade_metric_value, 57 ) );
+        trade.AddCustomMetric( "MK_Range5DP", metric_MK_Range5DP, 2 );
+        metric_MK_Range10D = StrToNum( StrExtract( trade_metric_value, 58 ) );
+        trade.AddCustomMetric( "MK_Range10D", metric_MK_Range10D, 2 );
+        metric_MK_Range10DP = StrToNum( StrExtract( trade_metric_value, 59 ) );
+        trade.AddCustomMetric( "MK_Range10DP", metric_MK_Range10DP, 2 );
+        metric_MK_Range20D = StrToNum( StrExtract( trade_metric_value, 60 ) );
+        trade.AddCustomMetric( "MK_Range20D", metric_MK_Range20D, 2 );
+        metric_MK_Range20DP = StrToNum( StrExtract( trade_metric_value, 61 ) );
+        trade.AddCustomMetric( "MK_Range20DP", metric_MK_Range20DP, 2 );
+        metric_MK_POORP = StrToNum( StrExtract( trade_metric_value, 62 ) );
+        trade.AddCustomMetric( "MK_POORP", metric_MK_POORP, 2 );
+        metric_MK_DUp1 = StrToNum( StrExtract( trade_metric_value, 63 ) );
+        trade.AddCustomMetric( "MK_DUp1", metric_MK_DUp1, 2 );
+        metric_MK_PUp1 = StrToNum( StrExtract( trade_metric_value, 64 ) );
+        trade.AddCustomMetric( "MK_PUp1", metric_MK_PUp1, 2 );
+        metric_MK_DUp2 = StrToNum( StrExtract( trade_metric_value, 65 ) );
+        trade.AddCustomMetric( "MK_DUp2", metric_MK_DUp2, 2 );
+        metric_MK_PUp2 = StrToNum( StrExtract( trade_metric_value, 66 ) );
+        trade.AddCustomMetric( "MK_PUp2", metric_MK_PUp2, 2 );
+        metric_MK_DUp5 = StrToNum( StrExtract( trade_metric_value, 67 ) );
+        trade.AddCustomMetric( "MK_DUp5", metric_MK_DUp5, 2 );
+        metric_MK_PUp5 = StrToNum( StrExtract( trade_metric_value, 68 ) );
+        trade.AddCustomMetric( "MK_PUp5", metric_MK_PUp5, 2 );
+        metric_MK_DUp10 = StrToNum( StrExtract( trade_metric_value, 69 ) );
+        trade.AddCustomMetric( "MK_DUp10", metric_MK_DUp10, 2 );
+        metric_MK_PUp10 = StrToNum( StrExtract( trade_metric_value, 70 ) );
+        trade.AddCustomMetric( "MK_PUp10", metric_MK_PUp10, 2 );
+        metric_MK_DUp15 = StrToNum( StrExtract( trade_metric_value, 71 ) );
+        trade.AddCustomMetric( "MK_DUp15", metric_MK_DUp15, 2 );
+        metric_MK_PUp15 = StrToNum( StrExtract( trade_metric_value, 72 ) );
+        trade.AddCustomMetric( "MK_PUp15", metric_MK_PUp15, 2 );
+        metric_MK_DUp30 = StrToNum( StrExtract( trade_metric_value, 73 ) );
+        trade.AddCustomMetric( "MK_DUp30", metric_MK_DUp30, 2 );
+        metric_MK_PUp30 = StrToNum( StrExtract( trade_metric_value, 74 ) );
+        trade.AddCustomMetric( "MK_PUp30", metric_MK_PUp30, 2 );
+        metric_MK_DUp60 = StrToNum( StrExtract( trade_metric_value, 75 ) );
+        trade.AddCustomMetric( "MK_DUp60", metric_MK_DUp60, 2 );
+        metric_MK_PUp60 = StrToNum( StrExtract( trade_metric_value, 76 ) );
+        trade.AddCustomMetric( "MK_PUp60", metric_MK_PUp60, 2 );
+        metric_MK_DUp120 = StrToNum( StrExtract( trade_metric_value, 77 ) );
+        trade.AddCustomMetric( "MK_DUp120", metric_MK_DUp120, 2 );
+        metric_MK_PUp120 = StrToNum( StrExtract( trade_metric_value, 78 ) );
+        trade.AddCustomMetric( "MK_PUp120", metric_MK_PUp120, 2 );
+        metric_MK_Pivot = StrToNum( StrExtract( trade_metric_value, 79 ) );
+        trade.AddCustomMetric( "MK_Pivot", metric_MK_Pivot, 2 );
+        metric_MK_PivotR1 = StrToNum( StrExtract( trade_metric_value, 80 ) );
+        trade.AddCustomMetric( "MK_PivotR1", metric_MK_PivotR1, 2 );
+        metric_MK_PivotS1 = StrToNum( StrExtract( trade_metric_value, 81 ) );
+        trade.AddCustomMetric( "MK_PivotS1", metric_MK_PivotS1, 2 );
+        metric_MK_PivotR2 = StrToNum( StrExtract( trade_metric_value, 82 ) );
+        trade.AddCustomMetric( "MK_PivotR2", metric_MK_PivotR2, 2 );
+        metric_MK_PivotS2 = StrToNum( StrExtract( trade_metric_value, 83 ) );
+        trade.AddCustomMetric( "MK_PivotS2", metric_MK_PivotS2, 2 );
+        metric_MK_VWAP1 = StrToNum( StrExtract( trade_metric_value, 84 ) );
+        trade.AddCustomMetric( "MK_VWAP1", metric_MK_VWAP1, 2 );
+        metric_MK_VWAP2 = StrToNum( StrExtract( trade_metric_value, 85 ) );
+        trade.AddCustomMetric( "MK_VWAP2", metric_MK_VWAP2, 2 );
+        metric_MK_VWAP3 = StrToNum( StrExtract( trade_metric_value, 86 ) );
+        trade.AddCustomMetric( "MK_VWAP3", metric_MK_VWAP3, 2 );
+        metric_MK_VWAP4 = StrToNum( StrExtract( trade_metric_value, 87 ) );
+        trade.AddCustomMetric( "MK_VWAP4", metric_MK_VWAP4, 2 );
+        metric_MK_VWAP5 = StrToNum( StrExtract( trade_metric_value, 88 ) );
+        trade.AddCustomMetric( "MK_VWAP5", metric_MK_VWAP5, 2 );
+        metric_MK_VWAP = StrToNum( StrExtract( trade_metric_value, 89 ) );
+        trade.AddCustomMetric( "MK_VWAP", metric_MK_VWAP, 2 );
+        metric_MK_DVWAP2 = StrToNum( StrExtract( trade_metric_value, 90 ) );
+        trade.AddCustomMetric( "MK_DVWAP2", metric_MK_DVWAP2, 2 );
+        metric_MK_DVWAP3 = StrToNum( StrExtract( trade_metric_value, 91 ) );
+        trade.AddCustomMetric( "MK_DVWAP3", metric_MK_DVWAP3, 2 );
+        metric_MK_DVWAP4 = StrToNum( StrExtract( trade_metric_value, 92 ) );
+        trade.AddCustomMetric( "MK_DVWAP4", metric_MK_DVWAP4, 2 );
+        metric_MK_DVWAP5 = StrToNum( StrExtract( trade_metric_value, 93 ) );
+        trade.AddCustomMetric( "MK_DVWAP5", metric_MK_DVWAP5, 2 );
+        metric_MK_FCD = StrToNum( StrExtract( trade_metric_value, 94 ) );
+        trade.AddCustomMetric( "MK_FCD", metric_MK_FCD, 2 );
+        metric_MK_FCP = StrToNum( StrExtract( trade_metric_value, 95 ) );
+        trade.AddCustomMetric( "MK_FCP", metric_MK_FCP, 2 );
+        metric_MK_FCR = StrToNum( StrExtract( trade_metric_value, 96 ) );
+        trade.AddCustomMetric( "MK_FCR", metric_MK_FCR, 2 );
+        metric_MK_FOD = StrToNum( StrExtract( trade_metric_value, 97 ) );
+        trade.AddCustomMetric( "MK_FOD", metric_MK_FOD, 2 );
+        metric_MK_FOP = StrToNum( StrExtract( trade_metric_value, 98 ) );
+        trade.AddCustomMetric( "MK_FOP", metric_MK_FOP, 2 );
+        metric_MK_FOR = StrToNum( StrExtract( trade_metric_value, 99 ) );
+        trade.AddCustomMetric( "MK_FOR", metric_MK_FOR, 2 );
+        metric_MK_FOW = StrToNum( StrExtract( trade_metric_value, 100 ) );
+        trade.AddCustomMetric( "MK_FOW", metric_MK_FOW, 2 );
+        metric_MK_FCDP = StrToNum( StrExtract( trade_metric_value, 101 ) );
+        trade.AddCustomMetric( "MK_FCDP", metric_MK_FCDP, 2 );
+        metric_MK_FCPP = StrToNum( StrExtract( trade_metric_value, 102 ) );
+        trade.AddCustomMetric( "MK_FCPP", metric_MK_FCPP, 2 );
+        metric_MK_U5DD = StrToNum( StrExtract( trade_metric_value, 103 ) );
+        trade.AddCustomMetric( "MK_U5DD", metric_MK_U5DD, 2 );
+        metric_MK_U5DP = StrToNum( StrExtract( trade_metric_value, 104 ) );
+        trade.AddCustomMetric( "MK_U5DP", metric_MK_U5DP, 2 );
+        metric_MK_U10DD = StrToNum( StrExtract( trade_metric_value, 105 ) );
+        trade.AddCustomMetric( "MK_U10DD", metric_MK_U10DD, 2 );
+        metric_MK_U10DP = StrToNum( StrExtract( trade_metric_value, 106 ) );
+        trade.AddCustomMetric( "MK_U10DP", metric_MK_U10DP, 2 );
+        metric_MK_U20DD = StrToNum( StrExtract( trade_metric_value, 107 ) );
+        trade.AddCustomMetric( "MK_U20DD", metric_MK_U20DD, 2 );
+        metric_MK_U20DP = StrToNum( StrExtract( trade_metric_value, 108 ) );
+        trade.AddCustomMetric( "MK_U20DP", metric_MK_U20DP, 2 );
+        metric_MK_UYD = StrToNum( StrExtract( trade_metric_value, 109 ) );
+        trade.AddCustomMetric( "MK_UYD", metric_MK_UYD, 2 );
+        metric_MK_UYP = StrToNum( StrExtract( trade_metric_value, 110 ) );
+        trade.AddCustomMetric( "MK_UYP", metric_MK_UYP, 2 );
+        metric_MK_R5M = StrToNum( StrExtract( trade_metric_value, 111 ) );
+        trade.AddCustomMetric( "MK_R5M", metric_MK_R5M, 2 );
+        metric_MK_R15M = StrToNum( StrExtract( trade_metric_value, 112 ) );
+        trade.AddCustomMetric( "MK_R15M", metric_MK_R15M, 2 );
+        metric_MK_R30M = StrToNum( StrExtract( trade_metric_value, 113 ) );
+        trade.AddCustomMetric( "MK_R30M", metric_MK_R30M, 2 );
+        metric_MK_R60M = StrToNum( StrExtract( trade_metric_value, 114 ) );
+        trade.AddCustomMetric( "MK_R60M", metric_MK_R60M, 2 );
+        metric_MK_BelowHigh = StrToNum( StrExtract( trade_metric_value, 115 ) );
+        trade.AddCustomMetric( "MK_BelowHigh", metric_MK_BelowHigh, 2 );
+        metric_MK_AboveLow = StrToNum( StrExtract( trade_metric_value, 116 ) );
+        trade.AddCustomMetric( "MK_AboveLow", metric_MK_AboveLow, 2 );
+        metric_MK_BelowHighPre = StrToNum( StrExtract( trade_metric_value, 117 ) );
+        trade.AddCustomMetric( "MK_BelowHighPre", metric_MK_BelowHighPre, 2 );
+        metric_MK_AboveLowPre = StrToNum( StrExtract( trade_metric_value, 118 ) );
+        trade.AddCustomMetric( "MK_AboveLowPre", metric_MK_AboveLowPre, 2 );
+        metric_MK_RD = StrToNum( StrExtract( trade_metric_value, 119 ) );
+        trade.AddCustomMetric( "MK_RD", metric_MK_RD, 2 );
+        metric_MK_RPD = StrToNum( StrExtract( trade_metric_value, 120 ) );
+        trade.AddCustomMetric( "MK_RPD", metric_MK_RPD, 2 );
+        metric_MK_RPM = StrToNum( StrExtract( trade_metric_value, 121 ) );
+        trade.AddCustomMetric( "MK_RPM", metric_MK_RPM, 2 );
+        metric_MK_R5D = StrToNum( StrExtract( trade_metric_value, 122 ) );
+        trade.AddCustomMetric( "MK_R5D", metric_MK_R5D, 2 );
+        metric_MK_R10D = StrToNum( StrExtract( trade_metric_value, 123 ) );
+        trade.AddCustomMetric( "MK_R10D", metric_MK_R10D, 2 );
+        metric_MK_R20D = StrToNum( StrExtract( trade_metric_value, 124 ) );
+        trade.AddCustomMetric( "MK_R20D", metric_MK_R20D, 2 );
+        metric_MK_R3MO = StrToNum( StrExtract( trade_metric_value, 125 ) );
+        trade.AddCustomMetric( "MK_R3MO", metric_MK_R3MO, 2 );
+        metric_MK_R6MO = StrToNum( StrExtract( trade_metric_value, 126 ) );
+        trade.AddCustomMetric( "MK_R6MO", metric_MK_R6MO, 2 );
+        metric_MK_R9MO = StrToNum( StrExtract( trade_metric_value, 127 ) );
+        trade.AddCustomMetric( "MK_R9MO", metric_MK_R9MO, 2 );
+        metric_MK_RY = StrToNum( StrExtract( trade_metric_value, 128 ) );
+        trade.AddCustomMetric( "MK_RY", metric_MK_RY, 2 );
+        metric_MK_R2Y = StrToNum( StrExtract( trade_metric_value, 129 ) );
+        trade.AddCustomMetric( "MK_R2Y", metric_MK_R2Y, 2 );
+        metric_MK_RL = StrToNum( StrExtract( trade_metric_value, 130 ) );
+        trade.AddCustomMetric( "MK_RL", metric_MK_RL, 2 );
+        metric_MK_RSI1 = StrToNum( StrExtract( trade_metric_value, 131 ) );
+        trade.AddCustomMetric( "MK_RSI1", metric_MK_RSI1, 2 );
+        metric_MK_RSI2 = StrToNum( StrExtract( trade_metric_value, 132 ) );
+        trade.AddCustomMetric( "MK_RSI2", metric_MK_RSI2, 2 );
+        metric_MK_RSI5 = StrToNum( StrExtract( trade_metric_value, 133 ) );
+        trade.AddCustomMetric( "MK_RSI5", metric_MK_RSI5, 2 );
+        metric_MK_RSI15 = StrToNum( StrExtract( trade_metric_value, 134 ) );
+        trade.AddCustomMetric( "MK_RSI15", metric_MK_RSI15, 2 );
+        metric_MK_RSI60 = StrToNum( StrExtract( trade_metric_value, 135 ) );
+        trade.AddCustomMetric( "MK_RSI60", metric_MK_RSI60, 2 );
+        metric_MK_DRSI = StrToNum( StrExtract( trade_metric_value, 136 ) );
+        trade.AddCustomMetric( "MK_DRSI", metric_MK_DRSI, 2 );
+        metric_MK_Boll5 = StrToNum( StrExtract( trade_metric_value, 137 ) );
+        trade.AddCustomMetric( "MK_Boll5", metric_MK_Boll5, 2 );
+        metric_MK_Boll15 = StrToNum( StrExtract( trade_metric_value, 138 ) );
+        trade.AddCustomMetric( "MK_Boll15", metric_MK_Boll15, 2 );
+        metric_MK_Boll60 = StrToNum( StrExtract( trade_metric_value, 139 ) );
+        trade.AddCustomMetric( "MK_Boll60", metric_MK_Boll60, 2 );
+        metric_MK_Boll = StrToNum( StrExtract( trade_metric_value, 140 ) );
+        trade.AddCustomMetric( "MK_Boll", metric_MK_Boll, 2 );
+        metric_MK_SMA200 = StrToNum( StrExtract( trade_metric_value, 141 ) );
+        trade.AddCustomMetric( "MK_SMA200", metric_MK_SMA200, 2 );
+        metric_MK_MA8P = StrToNum( StrExtract( trade_metric_value, 142 ) );
+        trade.AddCustomMetric( "MK_MA8P", metric_MK_MA8P, 2 );
+        metric_MK_MA8R = StrToNum( StrExtract( trade_metric_value, 143 ) );
+        trade.AddCustomMetric( "MK_MA8R", metric_MK_MA8R, 2 );
+        metric_MK_MA10P = StrToNum( StrExtract( trade_metric_value, 144 ) );
+        trade.AddCustomMetric( "MK_MA10P", metric_MK_MA10P, 2 );
+        metric_MK_MA10R = StrToNum( StrExtract( trade_metric_value, 145 ) );
+        trade.AddCustomMetric( "MK_MA10R", metric_MK_MA10R, 2 );
+        metric_MK_MA20P = StrToNum( StrExtract( trade_metric_value, 146 ) );
+        trade.AddCustomMetric( "MK_MA20P", metric_MK_MA20P, 2 );
+        metric_MK_MA20R = StrToNum( StrExtract( trade_metric_value, 147 ) );
+        trade.AddCustomMetric( "MK_MA20R", metric_MK_MA20R, 2 );
+        metric_MK_MA50P = StrToNum( StrExtract( trade_metric_value, 148 ) );
+        trade.AddCustomMetric( "MK_MA50P", metric_MK_MA50P, 2 );
+        metric_MK_MA50R = StrToNum( StrExtract( trade_metric_value, 149 ) );
+        trade.AddCustomMetric( "MK_MA50R", metric_MK_MA50R, 2 );
+        metric_MK_MA200P = StrToNum( StrExtract( trade_metric_value, 150 ) );
+        trade.AddCustomMetric( "MK_MA200P", metric_MK_MA200P, 2 );
+        metric_MK_MA200R = StrToNum( StrExtract( trade_metric_value, 151 ) );
+        trade.AddCustomMetric( "MK_MA200R", metric_MK_MA200R, 2 );
+        metric_MK_2SmaLa5 = StrToNum( StrExtract( trade_metric_value, 152 ) );
+        trade.AddCustomMetric( "MK_2SmaLa5", metric_MK_2SmaLa5, 2 );
+        metric_MK_2SmaLa8 = StrToNum( StrExtract( trade_metric_value, 153 ) );
+        trade.AddCustomMetric( "MK_2SmaLa8", metric_MK_2SmaLa8, 2 );
+        metric_MK_2SmaLa10 = StrToNum( StrExtract( trade_metric_value, 154 ) );
+        trade.AddCustomMetric( "MK_2SmaLa10", metric_MK_2SmaLa10, 2 );
+        metric_MK_2SmaLa20 = StrToNum( StrExtract( trade_metric_value, 155 ) );
+        trade.AddCustomMetric( "MK_2SmaLa20", metric_MK_2SmaLa20, 2 );
+        metric_MK_2SmaLa200 = StrToNum( StrExtract( trade_metric_value, 156 ) );
+        trade.AddCustomMetric( "MK_2SmaLa200", metric_MK_2SmaLa200, 2 );
+        metric_MK_5SmaLa5 = StrToNum( StrExtract( trade_metric_value, 157 ) );
+        trade.AddCustomMetric( "MK_5SmaLa5", metric_MK_5SmaLa5, 2 );
+        metric_MK_5SmaLa8 = StrToNum( StrExtract( trade_metric_value, 158 ) );
+        trade.AddCustomMetric( "MK_5SmaLa8", metric_MK_5SmaLa8, 2 );
+        metric_MK_5SmaLa10 = StrToNum( StrExtract( trade_metric_value, 159 ) );
+        trade.AddCustomMetric( "MK_5SmaLa10", metric_MK_5SmaLa10, 2 );
+        metric_MK_5SmaLa20 = StrToNum( StrExtract( trade_metric_value, 160 ) );
+        trade.AddCustomMetric( "MK_5SmaLa20", metric_MK_5SmaLa20, 2 );
+        metric_MK_5SmaLa200 = StrToNum( StrExtract( trade_metric_value, 161 ) );
+        trade.AddCustomMetric( "MK_5SmaLa200", metric_MK_5SmaLa200, 2 );
+        metric_MK_15SmaLa5 = StrToNum( StrExtract( trade_metric_value, 162 ) );
+        trade.AddCustomMetric( "MK_15SmaLa5", metric_MK_15SmaLa5, 2 );
+        metric_MK_15SmaLa8 = StrToNum( StrExtract( trade_metric_value, 163 ) );
+        trade.AddCustomMetric( "MK_15SmaLa8", metric_MK_15SmaLa8, 2 );
+        metric_MK_15SmaLa10 = StrToNum( StrExtract( trade_metric_value, 164 ) );
+        trade.AddCustomMetric( "MK_15SmaLa10", metric_MK_15SmaLa10, 2 );
+        metric_MK_15SmaLa20 = StrToNum( StrExtract( trade_metric_value, 165 ) );
+        trade.AddCustomMetric( "MK_15SmaLa20", metric_MK_15SmaLa20, 2 );
+        metric_MK_15SmaLa130 = StrToNum( StrExtract( trade_metric_value, 166 ) );
+        trade.AddCustomMetric( "MK_15SmaLa130", metric_MK_15SmaLa130, 2 );
+        metric_MK_15SmaLa200 = StrToNum( StrExtract( trade_metric_value, 167 ) );
+        trade.AddCustomMetric( "MK_15SmaLa200", metric_MK_15SmaLa200, 2 );
+        metric_MK_60SmaLa8 = StrToNum( StrExtract( trade_metric_value, 168 ) );
+        trade.AddCustomMetric( "MK_60SmaLa8", metric_MK_60SmaLa8, 2 );
+        metric_MK_60SmaLa10 = StrToNum( StrExtract( trade_metric_value, 169 ) );
+        trade.AddCustomMetric( "MK_60SmaLa10", metric_MK_60SmaLa10, 2 );
+        metric_MK_60SmaLa20 = StrToNum( StrExtract( trade_metric_value, 170 ) );
+        trade.AddCustomMetric( "MK_60SmaLa20", metric_MK_60SmaLa20, 2 );
+        metric_MK_60SmaLa200 = StrToNum( StrExtract( trade_metric_value, 171 ) );
+        trade.AddCustomMetric( "MK_60SmaLa200", metric_MK_60SmaLa200, 2 );
+        metric_MK_2Sma8a20 = StrToNum( StrExtract( trade_metric_value, 172 ) );
+        trade.AddCustomMetric( "MK_2Sma8a20", metric_MK_2Sma8a20, 2 );
+        metric_MK_5Sma8a20 = StrToNum( StrExtract( trade_metric_value, 173 ) );
+        trade.AddCustomMetric( "MK_5Sma8a20", metric_MK_5Sma8a20, 2 );
+        metric_MK_15Sma8a20 = StrToNum( StrExtract( trade_metric_value, 174 ) );
+        trade.AddCustomMetric( "MK_15Sma8a20", metric_MK_15Sma8a20, 2 );
+        metric_MK_60Sma8a20 = StrToNum( StrExtract( trade_metric_value, 175 ) );
+        trade.AddCustomMetric( "MK_60Sma8a20", metric_MK_60Sma8a20, 2 );
+        metric_MK_2Sma20a200 = StrToNum( StrExtract( trade_metric_value, 176 ) );
+        trade.AddCustomMetric( "MK_2Sma20a200", metric_MK_2Sma20a200, 2 );
+        metric_MK_5Sma20a200 = StrToNum( StrExtract( trade_metric_value, 177 ) );
+        trade.AddCustomMetric( "MK_5Sma20a200", metric_MK_5Sma20a200, 2 );
+        metric_MK_15Sma20a200 = StrToNum( StrExtract( trade_metric_value, 178 ) );
+        trade.AddCustomMetric( "MK_15Sma20a200", metric_MK_15Sma20a200, 2 );
+        metric_MK_60Sma20a200 = StrToNum( StrExtract( trade_metric_value, 179 ) );
+        trade.AddCustomMetric( "MK_60Sma20a200", metric_MK_60Sma20a200, 2 );
+		// END_BACKTEST_METRIC_AREA
+    }
+
+    bo.ListTrades();
+}

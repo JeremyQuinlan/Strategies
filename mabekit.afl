@@ -1,0 +1,736 @@
+function VolumePercentByMinute( _minute )
+{
+    ValueToUse = IIf( _minute < 0, 0, 1 );
+    ValueToUse = IIf( _minute >= 0 && _minute < 5, 2.54883274917853, ValueToUse );
+    ValueToUse = IIf( _minute >= 5 && _minute < 10, 4.36793417461713, ValueToUse );
+    ValueToUse = IIF( _minute >= 10 && _minute < 15, 6.16354293693914, ValueToUse );
+    ValueToUse = IIF( _minute >= 15 && _minute < 20, 7.90015016585481, ValueToUse );
+    ValueToUse = IIf( _minute >= 20 && _minute < 25, 9.49608031936357, ValueToUse );
+    ValueToUse = IIf( _minute >= 25 && _minute < 30, 11.0705160258258, ValueToUse );
+    ValueToUse = IIf( _minute >= 30 && _minute < 35, 12.971064875771, ValueToUse );
+    ValueToUse = IIf( _minute >= 35 && _minute < 40, 14.6626056205684, ValueToUse );
+    ValueToUse = IIf( _minute >= 40 && _minute < 45, 16.1739762667896, ValueToUse );
+    ValueToUse = IIf( _minute >= 45 && _minute < 50, 17.6464849290703, ValueToUse );
+    ValueToUse = IIf( _minute >= 50 && _minute < 55, 19.0416654115265, ValueToUse );
+    ValueToUse = IIf( _minute >= 55 && _minute < 60, 20.4119536790703, ValueToUse );
+    ValueToUse = IIf( _minute >= 60 && _minute < 65, 21.7983307875041, ValueToUse );
+    ValueToUse = IIf( _minute >= 65 && _minute < 70, 23.0799873044811, ValueToUse );
+    ValueToUse = IIf( _minute >= 70 && _minute < 75, 24.3777544097442, ValueToUse );
+    ValueToUse = IIf( _minute >= 75 && _minute < 80, 25.6549989880575, ValueToUse );
+    ValueToUse = IIf( _minute >= 80 && _minute < 85, 26.823075303847, ValueToUse );
+    ValueToUse = IIf( _minute >= 85 && _minute < 90, 28.0985516455775, ValueToUse );
+    ValueToUse = IIf( _minute >= 90 && _minute < 95, 29.4148304832968, ValueToUse );
+    ValueToUse = IIf( _minute >= 95 && _minute < 100, 30.5500804285323, ValueToUse );
+    ValueToUse = IIf( _minute >= 100 && _minute < 105, 31.7133942291895, ValueToUse );
+    ValueToUse = IIf( _minute >= 105 && _minute < 110, 32.8012573870842, ValueToUse );
+    ValueToUse = IIf( _minute >= 110 && _minute < 115, 33.8890683640326, ValueToUse );
+    ValueToUse = IIf( _minute >= 115 && _minute < 120, 34.8791845743284, ValueToUse );
+    ValueToUse = IIf( _minute >= 120 && _minute < 125, 35.8847922581922, ValueToUse );
+    ValueToUse = IIf( _minute >= 125 && _minute < 130, 36.9420169563262, ValueToUse );
+    ValueToUse = IIf( _minute >= 130 && _minute < 135, 37.8947045659753, ValueToUse );
+    ValueToUse = IIf( _minute >= 135 && _minute < 140, 39.0410282242447, ValueToUse );
+    ValueToUse = IIf( _minute >= 140 && _minute < 145, 40.0839133282973, ValueToUse );
+    ValueToUse = IIf( _minute >= 145 && _minute < 150, 41.0385058803236, ValueToUse );
+    ValueToUse = IIf( _minute >= 150 && _minute < 155, 41.9984688189201, ValueToUse );
+    ValueToUse = IIf( _minute >= 155 && _minute < 160, 42.9668814424107, ValueToUse );
+    ValueToUse = IIf( _minute >= 160 && _minute < 165, 43.7960643907056, ValueToUse );
+    ValueToUse = IIf( _minute >= 165 && _minute < 170, 44.6813040174893, ValueToUse );
+    ValueToUse = IIf( _minute >= 170 && _minute < 175, 45.5449814545101, ValueToUse );
+    ValueToUse = IIf( _minute >= 175 && _minute < 180, 46.3854968222379, ValueToUse );
+    ValueToUse = IIf( _minute >= 180 && _minute < 185, 47.2413522558274, ValueToUse );
+    ValueToUse = IIf( _minute >= 185 && _minute < 190, 48.1563646597791, ValueToUse );
+    ValueToUse = IIf( _minute >= 190 && _minute < 195, 48.9905981031234, ValueToUse );
+    ValueToUse = IIf( _minute >= 195 && _minute < 200, 49.8704539272992, ValueToUse );
+    ValueToUse = IIf( _minute >= 200 && _minute < 205, 50.6382013533671, ValueToUse );
+    ValueToUse = IIf( _minute >= 205 && _minute < 210, 51.4649298309137, ValueToUse );
+    ValueToUse = IIf( _minute >= 210 && _minute < 215, 52.3333297212646, ValueToUse );
+    ValueToUse = IIf( _minute >= 215 && _minute < 220, 53.2630729704413, ValueToUse );
+    ValueToUse = IIf( _minute >= 220 && _minute < 225, 54.1319580253863, ValueToUse );
+    ValueToUse = IIf( _minute >= 225 && _minute < 230, 55.0090840122284, ValueToUse );
+    ValueToUse = IIf( _minute >= 230 && _minute < 235, 56.0026813835318, ValueToUse );
+    ValueToUse = IIf( _minute >= 235 && _minute < 240, 56.8158766737838, ValueToUse );
+    ValueToUse = IIf( _minute >= 240 && _minute < 245, 57.7832918053627, ValueToUse );
+    ValueToUse = IIf( _minute >= 245 && _minute < 250, 58.6712263448364, ValueToUse );
+    ValueToUse = IIf( _minute >= 250 && _minute < 255, 59.6879583273117, ValueToUse );
+    ValueToUse = IIf( _minute >= 255 && _minute < 260, 60.6010881846114, ValueToUse );
+    ValueToUse = IIf( _minute >= 260 && _minute < 265, 61.6183966183464, ValueToUse );
+    ValueToUse = IIf( _minute >= 265 && _minute < 270, 62.5773976041076, ValueToUse );
+    ValueToUse = IIf( _minute >= 270 && _minute < 275, 63.6036195099126, ValueToUse );
+    ValueToUse = IIf( _minute >= 275 && _minute < 280, 64.5506491151758, ValueToUse );
+    ValueToUse = IIf( _minute >= 280 && _minute < 285, 65.5160555773883, ValueToUse );
+    ValueToUse = IIf( _minute >= 285 && _minute < 290, 66.4897981212479, ValueToUse );
+    ValueToUse = IIf( _minute >= 290 && _minute < 295, 67.3875541519497, ValueToUse );
+    ValueToUse = IIf( _minute >= 295 && _minute < 300, 68.470151304195, ValueToUse );
+    ValueToUse = IIf( _minute >= 300 && _minute < 305, 69.5273318080285, ValueToUse );
+    ValueToUse = IIf( _minute >= 305 && _minute < 310, 70.5225189931326, ValueToUse );
+    ValueToUse = IIf( _minute >= 310 && _minute < 315, 71.5553657620263, ValueToUse );
+    ValueToUse = IIf( _minute >= 315 && _minute < 320, 72.6431633470977, ValueToUse );
+    ValueToUse = IIf( _minute >= 320 && _minute < 325, 73.801508363527, ValueToUse );
+    ValueToUse = IIf( _minute >= 325 && _minute < 330, 74.894390729354, ValueToUse );
+    ValueToUse = IIf( _minute >= 330 && _minute < 335, 76.1880151543266, ValueToUse );
+    ValueToUse = IIf( _minute >= 335 && _minute < 340, 77.3949096778753, ValueToUse );
+    ValueToUse = IIf( _minute >= 340 && _minute < 345, 78.6661058443595, ValueToUse );
+    ValueToUse = IIf( _minute >= 345 && _minute < 350, 80.1261531608984, ValueToUse );
+    ValueToUse = IIf( _minute >= 350 && _minute < 355, 81.5879719998907, ValueToUse );
+    ValueToUse = IIf( _minute >= 355 && _minute < 360, 83.1352350886092, ValueToUse );
+    ValueToUse = IIf( _minute >= 360 && _minute < 365, 84.7801918246442, ValueToUse );
+    ValueToUse = IIf( _minute >= 365 && _minute < 370, 86.7384992726179, ValueToUse );
+    ValueToUse = IIf( _minute >= 370 && _minute < 375, 88.8549234785325, ValueToUse );
+    ValueToUse = IIf( _minute >= 375 && _minute < 380, 91.3940104445785, ValueToUse );
+    ValueToUse = IIf( _minute >= 380 && _minute < 385, 94.5750687140199, ValueToUse );
+    ValueToUse = IIf( _minute >= 385 && _minute < 390, 100.424381747974, ValueToUse );
+    ValueToUse = IIf( _minute >= 390 && _minute < 395, 103.543015118887, ValueToUse );
+    ValueToUse = IIf( _minute >= 395 && _minute < 400, 104.656942254566, ValueToUse );
+    ValueToUse = IIf( _minute >= 400 && _minute < 405, 105.286155437845, ValueToUse );
+    ValueToUse = IIf( _minute >= 405 && _minute < 410, 105.643366294988, ValueToUse );
+    ValueToUse = IIf( _minute >= 410 && _minute < 415, 105.908671442047, ValueToUse );
+    ValueToUse = IIf( _minute >= 415 && _minute < 420, 106.192283893409, ValueToUse );
+    ValueToUse = IIf( _minute >= 420 && _minute < 425, 106.491750227573, ValueToUse );
+    ValueToUse = IIf( _minute >= 425 && _minute < 430, 106.750148648626, ValueToUse );
+    ValueToUse = IIf( _minute >= 430 && _minute < 435, 106.880635588925, ValueToUse );
+    ValueToUse = IIf( _minute >= 435 && _minute < 440, 107.166531667356, ValueToUse );
+    ValueToUse = IIf( _minute >= 440 && _minute < 445, 107.439233137944, ValueToUse );
+    ValueToUse = IIf( _minute >= 445 && _minute < 450, 108.912760088299, ValueToUse );
+    ValueToUse = IIf( _minute >= 450 && _minute < 455, 109.146740253588, ValueToUse );
+    ValueToUse = IIf( _minute >= 455 && _minute < 460, 109.507096775327, ValueToUse );
+    ValueToUse = IIf( _minute >= 460 && _minute < 465, 109.708128593509, ValueToUse );
+    ValueToUse = IIf( _minute >= 465 && _minute < 470, 110.245846926842, ValueToUse );
+    ValueToUse = IIf( _minute >= 470 && _minute < 475, 110.41044919957, ValueToUse );
+    ValueToUse = IIf( _minute >= 475 && _minute < 480, 110.645094437665, ValueToUse );
+    ValueToUse = IIf( _minute >= 480 && _minute < 485, 111.350523009093, ValueToUse );
+    ValueToUse = IIf( _minute >= 485 && _minute < 490, 111.55593922531, ValueToUse );
+    ValueToUse = IIf( _minute >= 490 && _minute < 495, 111.763034780865, ValueToUse );
+    ValueToUse = IIf( _minute >= 495 && _minute < 500, 112.057477884313, ValueToUse );
+    ValueToUse = IIf( _minute >= 500 && _minute < 505, 112.257356455742, ValueToUse );
+    ValueToUse = IIf( _minute >= 505, 112.33827848964, ValueToUse );
+    return ValueToUse;
+}
+
+if( IsEmpty( VarGet( "SKIP_MK" ) ) )
+{
+// This file contains the list of MK_ formulas.  Anything in this file should be for supporting the MK_ formulas.
+// Any custom formulas based on the MK_ variables should go in my_custom_variables.afl that's included in shared_variables.afl at the bottom of the file
+    inMinute = 60;
+
+    MK_Price = C;
+    MK_GUD = IIF( MinutesSinceOpen >= -1, TodayOpen - YesterdayDailyClose, C - YesterdayDailyClose );
+    MK_GUP = MK_GUD / YesterdayDailyClose * 100;
+    MK_Time = MinutesSinceOpen; // DECIMALS=0
+
+	MK_PostD = C - YesterdayDailyClose; /// Change Post Market @link https://www.trade-ideas.com/help/filter/PostD/
+	MK_PostP = (C - YesterdayDailyClose) / YesterdayDailyClose * 100; /// Change Post Market @link https://www.trade-ideas.com/help/filter/PostP/
+	YearOpen = TimeFrameGetPrice( "O", inYearly, 0 );
+
+	MK_UpJan1D = C - YearOpen; /// Change Since Jan 1 @link https://www.trade-ideas.com/help/filter/UpJan1D/
+	MK_UpJan1P = (C - YearOpen) / YearOpen * 100; /// Change Since Jan 1 @link https://www.trade-ideas.com/help/filter/UpJan1D/
+
+//Volume Filters
+    TimeFrameSet( inDaily );
+    Avg1DayVolume = MA( V, 1 );
+    Avg2DayVolume = MA( V, 2 );
+    Avg5DayVolume = MA( V, 5 );
+    Avg10DayVolume = MA( V, 10 );
+    Avg3MonthVolume = MA( V, 63 );
+    Upbar_Daily = C > Ref( C, -1 );
+    Downbar_Daily = C < Ref( C, -1 );
+    UpCount_Daily = IIf( Upbar_Daily, BarsSince( NOT Upbar_Daily ), 0 );
+    DownCount_Daily = IIf( Downbar_Daily, BarsSince( NOT Downbar_Daily ), 0 );
+    ConsecutiveUp = IIf( Upbar_Daily, UpCount_Daily, IIf( Downbar_Daily, -DownCount_Daily, 0 ) );
+    DailyRange = H - L;
+    RangeContracting = DailyRange < Ref(DailyRange, -1);
+    RangeExpanding = DailyRange > Ref(DailyRange, -1);
+    RangeContractingCount = IIf(RangeContracting, BarsSince(NOT RangeContracting), 0);
+    RangeExpandingCount = IIf(RangeExpanding, BarsSince(NOT RangeExpanding), 0);
+    RC_Daily = IIf(RangeContracting, RangeContractingCount, IIf(RangeExpanding, -RangeExpandingCount, 0));
+    TimeFrameRestore();
+
+    Avg1DayVolume = TimeFrameExpand( Avg1DayVolume, inDaily );
+    Avg2DayVolume = TimeFrameExpand( Avg2DayVolume, inDaily );
+    Avg5DayVolume = TimeFrameExpand( Avg5DayVolume, inDaily );
+    Avg10DayVolume = TimeFrameExpand( Avg10DayVolume, inDaily );
+    Avg3MonthVolume = TimeFrameExpand( Avg3MonthVolume, inDaily );
+    MK_Up = TimeFrameExpand( ConsecutiveUp, inDaily ); /// Consecutive Days @link https://www.trade-ideas.com/help/filter/Up/ DECIMALS=0
+    MK_RC = TimeFrameExpand( RC_Daily, inDaily ); /// Range Contraction @link https://www.trade-ideas.com/help/filter/RC/ DECIMALS=0
+
+    Upbar = H > Ref( H, -1 ) AND L > Ref( L, -1 );
+    Downbar = H < Ref( H, -1 ) AND L < Ref( L, -1 );
+    UpCount = IIf( Upbar, BarsSince( NOT Upbar ), 0 );
+    DownCount = IIf( Downbar, BarsSince( NOT Downbar ), 0 );
+    MK_Up1 = IIf( Upbar, UpCount, IIf( Downbar, -DownCount, 0 ) ); /// Consecutive Candles 1min @link https://www.trade-ideas.com/help/filter/Up1/ DECIMALS=0
+
+    MK_Vol5D = IIF( Ref( premarketopen, 1 ), Ref( Avg5DayVolume, -1 ), Avg5DayVolume ); /// Average Daily Volume (5D) @link https://www.trade-ideas.com/help/filter/Vol5D/ DECIMALS=0
+    MK_Vol = IIF( Ref( premarketopen, 1 ), Ref( Avg10DayVolume, -1 ), Avg10DayVolume ); /// Average Daily Volume (10D) @link https://www.trade-ideas.com/help/filter/Vol/ DECIMALS=0
+    MK_Vol3M = IIF( Ref( premarketopen, 1 ), Ref( Avg3MonthVolume, -1 ), Avg3MonthVolume ); //Average Daily Volume (3M) https://www.trade-ideas.com/help/filter/Vol3M/ DECIMALS=0
+
+    MK_DV = C * MK_Vol; /// Dollar Volume @link https://www.trade-ideas.com/help/filter/DV/ DECIMALS=0
+
+    MK_TV = IIF( Cum( premarketopen ) > 0, Sum( V, BarsSince( premarketopen ) + 1 ), Null ); /// Volume Today @link https://www.trade-ideas.com/help/filter/TV/ DECIMALS=0
+    MK_PV = MK_TV / Avg10DayVolume * 100; /// Volume Today Percent @link https://www.trade-ideas.com/help/filter/PV/
+    MK_YPV = YesterdayDailyVolume / Avg10DayVolume * 100; /// Volume Yesterday Percent @link https://www.trade-ideas.com/help/filter/YPV/
+
+//NOTE: For MK_Vol filters, if the amibroker data has a lot of premarket or afterhours data, this will not match TI well since TI is based on RTH only
+    MK_Vol1 = V / ( Avg10DayVolume / 390 ) * 100; /// Volume 1 Minute Percent @link https://www.trade-ideas.com/help/filter/Vol1/
+
+    TimeFrameSet( 5 * inMinute );
+    Volume_5Min = V;
+    Upbar = H > Ref( H, -1 ) AND L > Ref( L, -1 );
+    Downbar = H < Ref( H, -1 ) AND L < Ref( L, -1 );
+    UpCount = IIf( Upbar, BarsSince( NOT Upbar ), 0 );
+    DownCount = IIf( Downbar, BarsSince( NOT Downbar ), 0 );
+    ConsecutiveUp = IIf( Upbar, UpCount, IIf( Downbar, -DownCount, 0 ) );
+    TimeFrameRestore();
+    Volume_5Min = TimeFrameExpand( Volume_5Min, 5 * inMinute );
+    MK_Vol5 = Volume_5Min / ( Avg10DayVolume / 390 * 5 ) * 100; /// Volume 5 Minute Percent @link https://www.trade-ideas.com/help/filter/Vol5/
+	MK_Up5 = TimeFrameExpand( ConsecutiveUp, 5 * inMinute ); /// Consecutive Candles 5min @link https://www.trade-ideas.com/help/filter/Up5/ DECIMALS=0
+
+    TimeFrameSet( 10 * inMinute );
+    Volume_10Min = V;
+    Upbar = H > Ref( H, -1 ) AND L > Ref( L, -1 );
+    Downbar = H < Ref( H, -1 ) AND L < Ref( L, -1 );
+    UpCount = IIf( Upbar, BarsSince( NOT Upbar ), 0 );
+    DownCount = IIf( Downbar, BarsSince( NOT Downbar ), 0 );
+    ConsecutiveUp = IIf( Upbar, UpCount, IIf( Downbar, -DownCount, 0 ) );
+    TimeFrameRestore();
+    Volume_10Min = TimeFrameExpand( Volume_10Min, 10 * inMinute );
+    MK_Vol10 = Volume_10Min / ( Avg10DayVolume / 390 * 10 ) * 100; /// Volume 10 Minute Percent @link https://www.trade-ideas.com/help/filter/Vol10/
+	MK_Up10 = TimeFrameExpand( ConsecutiveUp, 10 * inMinute ); /// Consecutive Candles 10min @link https://www.trade-ideas.com/help/filter/Up10/ DECIMALS=0
+
+    TimeFrameSet( 15 * inMinute );
+    Volume_15Min = V;
+    Upbar = H > Ref( H, -1 ) AND L > Ref( L, -1 );
+    Downbar = H < Ref( H, -1 ) AND L < Ref( L, -1 );
+    UpCount = IIf( Upbar, BarsSince( NOT Upbar ), 0 );
+    DownCount = IIf( Downbar, BarsSince( NOT Downbar ), 0 );
+    ConsecutiveUp = IIf( Upbar, UpCount, IIf( Downbar, -DownCount, 0 ) );
+    TimeFrameRestore();
+    Volume_15Min = TimeFrameExpand( Volume_15Min, 15 * inMinute );
+    MK_Vol15 = Volume_15Min / ( Avg10DayVolume / 390 * 15 ) * 100; /// Volume 15 Minute Percent @link https://www.trade-ideas.com/help/filter/Vol15/
+	MK_Up15 = TimeFrameExpand( ConsecutiveUp, 15 * inMinute ); /// Consecutive Candles 15min @link https://www.trade-ideas.com/help/filter/Up15/ DECIMALS=0
+
+    TimeFrameSet( 30 * inMinute );
+    Volume_30Min = V;
+    Upbar = H > Ref( H, -1 ) AND L > Ref( L, -1 );
+    Downbar = H < Ref( H, -1 ) AND L < Ref( L, -1 );
+    UpCount = IIf( Upbar, BarsSince( NOT Upbar ), 0 );
+    DownCount = IIf( Downbar, BarsSince( NOT Downbar ), 0 );
+    ConsecutiveUp = IIf( Upbar, UpCount, IIf( Downbar, -DownCount, 0 ) );
+    TimeFrameRestore();
+    Volume_30Min = TimeFrameExpand( Volume_30Min, 30 * inMinute );
+    MK_Vol30 = Volume_30Min / ( Avg10DayVolume / 390 * 30 ) * 100; /// Volume 30 Minute Percent @link https://www.trade-ideas.com/help/filter/Vol30/
+	MK_Up30 = TimeFrameExpand( ConsecutiveUp, 30 * inMinute ); /// Consecutive Candles 30min @link https://www.trade-ideas.com/help/filter/Up30/ DECIMALS=0
+
+    MK_PMVol = IIf( AfterHours, Sum( V, BarsSince( afterhoursopen ) + 1 ), Null ); /// Post Market Volume @link https://www.trade-ideas.com/help/filter/PMVol/
+
+// Range Filters
+    TimeFrameSet( inDaily );
+    MK_ATR = ATR( 14 );
+    TimeFrameRestore();
+    MK_ATR = TimeFrameExpand( MK_ATR, inDaily );
+// this if statement fixes EOD values being one bar off
+    MK_ATR = IIF( Ref( premarketopen, 1 ), Ref( MK_ATR, -1 ), MK_ATR ); /// Average True Range @link https://www.trade-ideas.com/help/filter/ATR/
+
+    MK_TRangeD = TodayHigh - TodayLow; /// Today's Range Dollars @link https://www.trade-ideas.com/help/filter/TRangeD/
+    MK_TRangeP = MK_TRangeD / MK_ATR * 100; /// Today's Range Percent @link https://www.trade-ideas.com/help/filter/TRangeP/
+
+    TimeFrameSet( 2 * inMinute );
+    MK_Range2 = HHV( H, 1 ) - LLV( L, 1 );
+    Upbar = H > Ref( H, -1 ) AND L > Ref( L, -1 );
+    Downbar = H < Ref( H, -1 ) AND L < Ref( L, -1 );
+    UpCount = IIf( Upbar, BarsSince( NOT Upbar ), 0 );
+    DownCount = IIf( Downbar, BarsSince( NOT Downbar ), 0 );
+    ConsecutiveUp = IIf( Upbar, UpCount, IIf( Downbar, -DownCount, 0 ) );
+    TimeFrameRestore();
+    MK_Range2 = TimeFrameExpand( MK_Range2, 2 * inMinute ); /// Range 2 Minute Dollars @link https://www.trade-ideas.com/help/filter/Range2/
+    MK_Range2P = MK_Range2 / C * 100; /// Range 2 Minute Percent @link https://www.trade-ideas.com/help/filter/Range2P/
+	MK_Up2 = TimeFrameExpand( ConsecutiveUp, 2 * inMinute ); /// Consecutive Candles 2min @link https://www.trade-ideas.com/help/filter/Up2/ DECIMALS=0
+
+    TimeFrameSet( 5 * inMinute );
+    MK_Range5 = HHV( H, 1 ) - LLV( L, 1 );
+    TimeFrameRestore();
+    MK_Range5 = TimeFrameExpand( MK_Range5, 5 * inMinute ); /// Range 5 Minute Dollars @link https://www.trade-ideas.com/help/filter/Range5/
+    MK_Range5P = MK_Range5 / C * 100; /// Range 5 Minute Percent @link https://www.trade-ideas.com/help/filter/Range5P/
+
+    TimeFrameSet( 10 * inMinute );
+    MK_Range10 = HHV( H, 1 ) - LLV( L, 1 );
+    TimeFrameRestore();
+    MK_Range10 = TimeFrameExpand( MK_Range10, 10 * inMinute ); /// Range 10 Minute Dollars @link https://www.trade-ideas.com/help/filter/Range10/
+    MK_Range10P = MK_Range10 / C * 100; /// Range 10 Minute Percent @link https://www.trade-ideas.com/help/filter/Range10P/
+
+    TimeFrameSet( 15 * inMinute );
+    MK_Range15 = HHV( H, 1 ) - LLV( L, 1 );
+    fifteenHigh = High;
+    fifteenLow = Low;
+    TimeFrameRestore();
+    MK_Range15 = TimeFrameExpand( MK_Range15, 15 * inMinute ); /// Range 15 Minute Dollars @link https://www.trade-ideas.com/help/filter/Range15/
+    MK_Range15P = MK_Range15 / C * 100; /// Range 15 Minute Percent @link https://www.trade-ideas.com/help/filter/Range15P/
+    fifteenHigh = TimeFrameExpand( fifteenHigh, 15 * inMinute );
+    fifteenLow = TimeFrameExpand( fifteenLow, 15 * inMinute );
+    Volatility = IIf( BarsSince( newday ) == 0, fifteenHigh - fifteenLow, Sum( fifteenHigh - fifteenLow, BarsSince( newday ) ) / BarsSince( newday ) );
+    YesterdayVolatility = ValueWhen( lastrthbar, Volatility, 1 );
+    YesterdayVolatilityDaily = TimeFrameCompress( YesterdayVolatility , inDaily, compressOpen );
+    TIVolatility = MA( YesterdayVolatilityDaily , 10 );
+    MK_VWV = TimeFrameExpand( TIVolatility, inDaily ); /// Volatility Dollars @link https://www.trade-ideas.com/help/filter/VWV/
+    MK_VWVP = MK_VWV / C * 100; /// Volatility Percent @link https://www.trade-ideas.com/help/filter/VWVP/
+
+    VolPercentByMin = VolumePercentByMinute( MinutesSinceOpen );
+    MK_RV = IIf( VolPercentByMin > 0, MK_TV / MK_Vol * 100 / VolPercentByMin, 0 );
+    MK_Wiggle = MK_RV * MK_VWV;
+
+    MK_GUR = MK_GUD / MK_VWV;
+
+    TimeFrameSet( 30 * inMinute );
+    MK_Range30 = HHV( H, 1 ) - LLV( L, 1 );
+    TimeFrameRestore();
+    MK_Range30 = TimeFrameExpand( MK_Range30, 30 * inMinute ); /// Range 30 Minute Dollars @link https://www.trade-ideas.com/help/filter/Range30/
+    MK_Range30P = MK_Range30 / C * 100; /// Range 30 Minute Percent @link https://www.trade-ideas.com/help/filter/Range30P/
+
+    TimeFrameSet( 60 * inMinute );
+    MK_Range60 = HHV( H, 1 ) - LLV( L, 1 );
+    Upbar = H > Ref( H, -1 ) AND L > Ref( L, -1 );
+    Downbar = H < Ref( H, -1 ) AND L < Ref( L, -1 );
+    UpCount = IIf( Upbar, BarsSince( NOT Upbar ), 0 );
+    DownCount = IIf( Downbar, BarsSince( NOT Downbar ), 0 );
+    ConsecutiveUp = IIf( Upbar, UpCount, IIf( Downbar, -DownCount, 0 ) );
+    TimeFrameRestore();
+    MK_Range60 = TimeFrameExpand( MK_Range60, 60 * inMinute ); /// Range 60 Minute Dollars @link https://www.trade-ideas.com/help/filter/Range60/
+    MK_Range60P = MK_Range60 / C * 100; /// Range 60 Minute Percent @link https://www.trade-ideas.com/help/filter/Range60P/
+	MK_Up60 = TimeFrameExpand( ConsecutiveUp, 60 * inMinute ); /// Consecutive Candles 60min @link https://www.trade-ideas.com/help/filter/Up60/ DECIMALS=0
+
+    TimeFrameSet( 120 * inMinute );
+    MK_Range120 = HHV( H, 1 ) - LLV( L, 1 );
+    TimeFrameRestore();
+    MK_Range120 = TimeFrameExpand( MK_Range120, 120 * inMinute ); /// Range 120 Minute Dollars @link https://www.trade-ideas.com/help/filter/Range120/
+    MK_Range120P = MK_Range120 / C * 100; /// Range 120 Minute Percent @link https://www.trade-ideas.com/help/filter/Range120P/
+
+    TimeFrameSet( inDaily );
+    high5day = HHV( H, 5 );
+    high10day = HHV( H, 10 );
+    high20day = HHV( H, 20 );
+    high3month = HHV( H, 63 );
+    high6month = HHV( H, 126 );
+    high9month = HHV( H, 189 );
+    high1year = HHV( H, 252 );
+    high2year = HHV( H, 504 );
+
+    low5day = LLV( L, 5 );
+    low10day = LLV( L, 10 );
+    low20day = LLV( L, 20 );
+    low3month = LLV( L, 63 );
+    low6month = LLV( L, 126 );
+    low9month = LLV( L, 189 );
+    low1year = LLV( L, 252 );
+    low2year = LLV( L, 504 );
+    TimeFrameRestore();
+
+    high5day = TimeFrameExpand( high5day, inDaily );
+    high10day = TimeFrameExpand( high10day, inDaily );
+    high20day = TimeFrameExpand( high20day, inDaily );
+    high3month = TimeFrameExpand( high3month, inDaily );
+    high6month = TimeFrameExpand( high6month, inDaily );
+    high9month = TimeFrameExpand( high9month, inDaily );
+    high1year = TimeFrameExpand( high1year, inDaily );
+    high2year = TimeFrameExpand( high2year, inDaily );
+
+    low5day = TimeFrameExpand( low5day, inDaily );
+    low10day = TimeFrameExpand( low10day, inDaily );
+    low20day = TimeFrameExpand( low20day, inDaily );
+    low3month = TimeFrameExpand( low3month, inDaily );
+    low6month = TimeFrameExpand( low6month, inDaily );
+    low9month = TimeFrameExpand( low9month, inDaily );
+    low1year = TimeFrameExpand( low1year, inDaily );
+    low2year = TimeFrameExpand( low2year, inDaily );
+
+// NOTE: this if statement fixes EOD values being one bar off
+    high5day = IIF( Ref( premarketopen, 1 ), Ref( high5day, -1 ), high5day );
+    high10day = IIF( Ref( premarketopen, 1 ), Ref( high10day, -1 ), high10day );
+    high20day = IIF( Ref( premarketopen, 1 ), Ref( high20day, -1 ), high20day );
+    high3month = IIF( Ref( premarketopen, 1 ), Ref( high3month, -1 ), high3month );
+    high6month = IIF( Ref( premarketopen, 1 ), Ref( high6month, -1 ), high6month );
+    high9month = IIF( Ref( premarketopen, 1 ), Ref( high9month, -1 ), high9month );
+    high1year = IIF( Ref( premarketopen, 1 ), Ref( high1year, -1 ), high1year );
+    high2year = IIF( Ref( premarketopen, 1 ), Ref( high2year, -1 ), high2year );
+
+    low5day = IIF( Ref( premarketopen, 1 ), Ref( low5day, -1 ), low5day );
+    low10day = IIF( Ref( premarketopen, 1 ), Ref( low10day, -1 ), low10day );
+    low20day = IIF( Ref( premarketopen, 1 ), Ref( low20day, -1 ), low20day );
+    low3month = IIF( Ref( premarketopen, 1 ), Ref( low3month, -1 ), low3month );
+    low6month = IIF( Ref( premarketopen, 1 ), Ref( low6month, -1 ), low6month );
+    low9month = IIF( Ref( premarketopen, 1 ), Ref( low9month, -1 ), low9month );
+    low1year = IIF( Ref( premarketopen, 1 ), Ref( low1year, -1 ), low1year );
+    low2year = IIF( Ref( premarketopen, 1 ), Ref( low2year, -1 ), low2year );
+
+    MK_Range5D = high5day - low5day; /// Range 5 Day Dollars @link https://www.trade-ideas.com/help/filter/Range5D/
+    MK_Range5DP = MK_Range5D / C * 100; /// Range 5 Day Percent @link https://www.trade-ideas.com/help/filter/Range5DP/
+    MK_Range10D = high10day - low10day; /// Range 10 Day Dollars @link https://www.trade-ideas.com/help/filter/Range10D/
+    MK_Range10DP = MK_Range10D / C * 100; /// Range 10 Day Percent @link https://www.trade-ideas.com/help/filter/Range10DP/
+    MK_Range20D = high20day - low20day; /// Range 20 Day Dollars @link https://www.trade-ideas.com/help/filter/Range20D/
+    MK_Range20DP = MK_Range20D / C * 100; /// Range 20 Day Percent @link https://www.trade-ideas.com/help/filter/Range20DP/
+
+    PositionOfOpen = ( TodayOpen - YesterdayDailyLow ) / ( YesterdayDailyHigh - YesterdayDailyLow ) * 100;
+    MK_POORP = IIF( MinutesSinceOpen >= -1, PositionOfOpen, Null ); /// Position of Open @link https://www.trade-ideas.com/help/filter/POORP/
+
+// NOTE: Change filters are measured close to close, you can also make filters for max change using low to high or close to high etc
+    MK_DUp1 = C - Ref( C, -1 ); /// Change 1 Minute Dollars @link https://www.trade-ideas.com/help/filter/DUp1/
+    MK_PUp1 = MK_DUp1 / Ref( C, -1 ) * 100; /// Change 1 Minute Percent @link https://www.trade-ideas.com/help/filter/PUp1/
+
+    TimeFrameSet( 2 * inMinute );
+    MK_DUp2 = C - Ref( C, -1 );
+    MK_PUp2 = MK_DUp2 / Ref( C, -1 ) * 100;
+    TimeFrameRestore();
+    MK_DUp2 = TimeFrameExpand( MK_DUp2, 2 * inMinute ); /// Change 2 Minute Dollars @link https://www.trade-ideas.com/help/filter/DUp2/
+    MK_PUp2 = TimeFrameExpand( MK_PUp2, 2 * inMinute ); /// Change 2 Minute Percent @link https://www.trade-ideas.com/help/filter/PUp2/
+
+    TimeFrameSet( 5 * inMinute );
+    MK_DUp5 = C - Ref( C, -1 );
+    MK_PUp5 = MK_DUp5 / Ref( C, -1 ) * 100;
+    TimeFrameRestore();
+    MK_DUp5 = TimeFrameExpand( MK_DUp5, 5 * inMinute ); /// Change 5 Minute Dollars @link https://www.trade-ideas.com/help/filter/DUp5/
+    MK_PUp5 = TimeFrameExpand( MK_PUp5, 5 * inMinute ); /// Change 5 Minute Percent @link https://www.trade-ideas.com/help/filter/PUp5/
+
+    TimeFrameSet( 10 * inMinute );
+    MK_DUp10 = C - Ref( C, -1 );
+    MK_PUp10 = MK_DUp10 / Ref( C, -1 ) * 100;
+    TimeFrameRestore();
+    MK_DUp10 = TimeFrameExpand( MK_DUp10, 10 * inMinute ); /// Change 10 Minute Dollars @link https://www.trade-ideas.com/help/filter/DUp10/
+    MK_PUp10 = TimeFrameExpand( MK_PUp10, 10 * inMinute ); /// Change 10 Minute Percent @link https://www.trade-ideas.com/help/filter/PUp10/
+
+    TimeFrameSet( 15 * inMinute );
+    MK_DUp15 = C - Ref( C, -1 );
+    MK_PUp15 = MK_DUp15 / Ref( C, -1 ) * 100;
+    TimeFrameRestore();
+    MK_DUp15 = TimeFrameExpand( MK_DUp15, 15 * inMinute ); /// Change 15 Minute Dollars @link https://www.trade-ideas.com/help/filter/DUp15/
+    MK_PUp15 = TimeFrameExpand( MK_PUp15, 15 * inMinute ); /// Change 15 Minute Percent @link https://www.trade-ideas.com/help/filter/PUp15/
+
+    TimeFrameSet( 30 * inMinute );
+    MK_DUp30 = C - Ref( C, -1 );
+    MK_PUp30 = MK_DUp30 / Ref( C, -1 ) * 100;
+    TimeFrameRestore();
+    MK_DUp30 = TimeFrameExpand( MK_DUp30, 30 * inMinute ); /// Change 30 Minute Dollars @link https://www.trade-ideas.com/help/filter/DUp30/
+    MK_PUp30 = TimeFrameExpand( MK_PUp30, 30 * inMinute ); /// Change 30 Minute Percent @link https://www.trade-ideas.com/help/filter/PUp30/
+
+    TimeFrameSet( 60 * inMinute );
+    MK_DUp60 = C - Ref( C, -1 );
+    MK_PUp60 = MK_DUp60 / Ref( C, -1 ) * 100;
+    TimeFrameRestore();
+    MK_DUp60 = TimeFrameExpand( MK_DUp60, 60 * inMinute ); /// Change 60 Minute Dollars @link https://www.trade-ideas.com/help/filter/DUp60/
+    MK_PUp60 = TimeFrameExpand( MK_PUp60, 60 * inMinute ); /// Change 60 Minute Percent @link https://www.trade-ideas.com/help/filter/PUp60/
+
+    TimeFrameSet( 120 * inMinute );
+    MK_DUp120 = C - Ref( C, -1 );
+    MK_PUp120 = MK_DUp120 / Ref( C, -1 ) * 100;
+    TimeFrameRestore();
+    MK_DUp120 = TimeFrameExpand( MK_DUp120, 120 * inMinute ); /// Change 120 Minute Dollars @link https://www.trade-ideas.com/help/filter/DUp120/
+    MK_PUp120 = TimeFrameExpand( MK_PUp120, 120 * inMinute ); /// Change 120 Minute Percent @link https://www.trade-ideas.com/help/filter/PUp120/
+
+// Pivot Filters
+    Pivot = ( YesterdayDailyHigh + YesterdayDailyLow + YesterdayDailyClose ) / 3;
+    R1 = ( 2 * Pivot ) - YesterdayDailyLow;
+    S1 = ( 2 * Pivot ) - YesterdayDailyHigh;
+    R2 = Pivot + ( R1 - S1 );
+    S2 = Pivot - ( R1 - S1 );
+
+    MK_Pivot = ( C - Pivot ) / Pivot * 100; /// Distance from Pivot @link https://www.trade-ideas.com/help/filter/Pivot/
+    MK_PivotR1 = ( C - R1 ) / R1 * 100; /// Distance from Pivot R1 @link https://www.trade-ideas.com/help/filter/PivotR1/
+    MK_PivotS1 = ( C - S1 ) / S1 * 100; /// Distance from Pivot S1 @link https://www.trade-ideas.com/help/filter/PivotS1/
+    MK_PivotR2 = ( C - R2 ) / R2 * 100; /// Distance from Pivot R2 @link https://www.trade-ideas.com/help/filter/PivotR2/
+    MK_PivotS2 = ( C - S2 ) / S2 * 100; /// Distance from Pivot S2 @link https://www.trade-ideas.com/help/filter/PivotS2/
+
+// VWAP Filters
+// NOTE: TI VWAP1 starts from rth open, this starts from premarket open
+    PV1 = ( H + L + C ) / 3 * V;
+    MK_VWAP1 = Sum( PV1, BarsSince( premarketopen ) ) / VolumeToday; /// VWAP 1 @link https://www.trade-ideas.com/help/filter/VWAP1/
+
+// NOTE: Using Daily Data for previous VWAPS but including premarket in todays VWAP
+    AvgPriceDaily = ( YesterdayDailyHigh + YesterdayDailyLow + YesterdayDailyClose ) / 3;
+    DailyPV2 = AvgPriceDaily * YesterdayDailyVolume;
+    dailyVWAP2 = DailyPV2 / YesterdayDailyVolume;
+    MK_VWAP2 = ( MK_VWAP1 * VolumeToday + dailyVWAP2 * YesterdayDailyVolume ) / ( VolumeToday + YesterdayDailyVolume ); /// VWAP 2 Day @link https://www.trade-ideas.com/help/filter/VWAP2/
+
+    DailyPV3 = DailyPV2 + ValueWhen( newday, DailyPV2, 2 );
+    DailyV3 = YesterdayDailyVolume + ValueWhen( newday, YesterdayDailyVolume, 2 );
+    dailyVWAP3 = DailyPV3 / DailyV3;
+    MK_VWAP3 = ( MK_VWAP1 * VolumeToday + dailyVWAP3 * DailyV3 ) / ( VolumeToday + DailyV3 ); /// VWAP 3 Day @link https://www.trade-ideas.com/help/filter/VWAP3/
+
+    DailyPV4 = DailyPV3 + ValueWhen( newday, DailyPV2, 3 );
+    DailyV4 = DailyV3 + ValueWhen( newday, YesterdayDailyVolume, 3 );
+    dailyVWAP4 = DailyPV4 / DailyV4;
+    MK_VWAP4 = ( MK_VWAP1 * VolumeToday + dailyVWAP4 * DailyV4 ) / ( VolumeToday + DailyV4 ); /// VWAP 4 Day @link https://www.trade-ideas.com/help/filter/VWAP4/
+
+    DailyPV5 = DailyPV4 + ValueWhen( newday, DailyPV2, 4 );
+    DailyV5 = DailyV4 + ValueWhen( newday, YesterdayDailyVolume, 4 );
+    dailyVWAP5 = DailyPV5 / DailyV5;
+    MK_VWAP5 = ( MK_VWAP1 * VolumeToday + dailyVWAP5 * DailyV5 ) / ( VolumeToday + DailyV5 ); /// VWAP 5 Day @link https://www.trade-ideas.com/help/filter/VWAP5/
+
+    MK_VWAP = 100 * ( C - MK_VWAP1 ) / MK_VWAP1; /// Distance from VWAP 1 @link https://www.trade-ideas.com/help/filter/VWAP/
+    MK_DVWAP2 = 100 * ( C - MK_VWAP2 ) / MK_VWAP2; /// Distance from VWAP 2 @link https://www.trade-ideas.com/help/filter/DVWAP2/
+    MK_DVWAP3 = 100 * ( C - MK_VWAP3 ) / MK_VWAP3; /// Distance from VWAP 3 @link https://www.trade-ideas.com/help/filter/DVWAP3/
+    MK_DVWAP4 = 100 * ( C - MK_VWAP4 ) / MK_VWAP4; /// Distance from VWAP 4 @link https://www.trade-ideas.com/help/filter/DVWAP4/
+    MK_DVWAP5 = 100 * ( C - MK_VWAP5 ) / MK_VWAP5; /// Distance from VWAP 5 @link https://www.trade-ideas.com/help/filter/DVWAP5/
+
+// Change In Daily Filters
+    MK_FCD = C - YesterdayDailyClose; /// Change from Close Dollars @link https://www.trade-ideas.com/help/filter/FCD/
+    MK_FCP = MK_FCD / YesterdayDailyClose * 100; /// Change from Close Percent @link https://www.trade-ideas.com/help/filter/FCP/
+    MK_FCR = MK_FCD / MK_VWV; /// Change from Close Bars @link https://www.trade-ideas.com/help/filter/FCR/
+
+    MK_FOD = C - TodayOpen; /// Change from Open Dollars @link https://www.trade-ideas.com/help/filter/FOD/
+    MK_FOP = MK_FOD / TodayOpen * 100; /// Change from Open Percent @link https://www.trade-ideas.com/help/filter/FOP/
+    MK_FOR = MK_FOD / MK_VWV; /// Change from Open Bars @link https://www.trade-ideas.com/help/filter/FOR/
+    MK_FOW = MK_FOD / MK_ATR * 100; /// Change from Open ATR @link https://www.trade-ideas.com/help/filter/FOW/
+
+    MK_FCDP = C - ValueWhen( newday, YesterdayDailyClose, 2 ); /// Change from Previous Day Dollars @link https://www.trade-ideas.com/help/filter/FCDP/
+    MK_FCPP = MK_FCDP / ValueWhen( newday, YesterdayDailyClose, 2 ) * 100; /// Change from Previous Day Percent @link https://www.trade-ideas.com/help/filter/FCPP/
+
+    MK_U5DD = C - ValueWhen( newday, YesterdayDailyClose, 5 ); /// Change in 5 Days Dollars @link https://www.trade-ideas.com/help/filter/U5DD/
+    MK_U5DP = MK_U5DD / ValueWhen( newday, YesterdayDailyClose, 5 ) * 100; /// Change in 5 Days Percent @link https://www.trade-ideas.com/help/filter/U5DP/
+
+    MK_U10DD = C - ValueWhen( newday, YesterdayDailyClose, 10 ); /// Change in 10 Days Dollars @link https://www.trade-ideas.com/help/filter/U10DD/
+    MK_U10DP = MK_U10DD / ValueWhen( newday, YesterdayDailyClose, 10 ) * 100; /// Change in 10 Days Percent @link https://www.trade-ideas.com/help/filter/U10DP/
+
+    MK_U20DD = C - ValueWhen( newday, YesterdayDailyClose, 20 ); /// Change in 20 Days Dollars @link https://www.trade-ideas.com/help/filter/U20DD/
+    MK_U20DP = MK_U20DD / ValueWhen( newday, YesterdayDailyClose, 20 ) * 100; /// Change in 20 Days Percent @link https://www.trade-ideas.com/help/filter/U20DP/
+
+//NOTE: Using 252 trading days for 1 year
+    MK_UYD = C - ValueWhen( newday, YesterdayDailyClose, 252 ); /// Change in 1 Year Dollars @link https://www.trade-ideas.com/help/filter/UYD/
+    MK_UYP = MK_UYD / ValueWhen( newday, YesterdayDailyClose, 252 ) * 100; /// Change in 1 Year Percent @link https://www.trade-ideas.com/help/filter/UYP/
+
+// Position In Range Filters
+    TimeFrameSet( 5 * inMinute );
+    L5min = LLV( L, 1 );
+    TimeFrameRestore();
+    L5min = TimeFrameExpand( L5min, 5 * inMinute );
+    MK_R5M = ( C - L5min ) / MK_Range5 * 100; /// Position in 5 Minute Range @link https://www.trade-ideas.com/help/filter/R5M/
+
+    TimeFrameSet( 15 * inMinute );
+    L15min = LLV( L, 1 );
+    TimeFrameRestore();
+    L15min = TimeFrameExpand( L15min, 15 * inMinute );
+    MK_R15M = ( C - L15min ) / MK_Range15 * 100; /// Position in 15 Minute Range @link https://www.trade-ideas.com/help/filter/R15M/
+
+    TimeFrameSet( 30 * inMinute );
+    L30min = LLV( L, 1 );
+    TimeFrameRestore();
+    L30min = TimeFrameExpand( L30min, 30 * inMinute );
+    MK_R30M = ( C - L30min ) / MK_Range30 * 100; /// Position in 30 Minute Range @link https://www.trade-ideas.com/help/filter/R30M/
+
+    TimeFrameSet( 60 * inMinute );
+    L60min = LLV( L, 1 );
+    TimeFrameRestore();
+    L60min = TimeFrameExpand( L60min, 60 * inMinute );
+    MK_R60M = ( C - L60min ) / MK_Range60 * 100; /// Position in 60 Minute Range @link https://www.trade-ideas.com/help/filter/R60M/
+
+    MK_BelowHigh = TodayHigh - C; /// Dollars Below High @link https://www.trade-ideas.com/help/filter/BelowHigh/
+    MK_AboveLow = C - TodayLow; /// Dollars Above Low @link https://www.trade-ideas.com/help/filter/AboveLow/
+    MK_BelowHighPre = PMHigh - C; /// Dollars Below Pre Market High @link https://www.trade-ideas.com/help/filter/BelowHighPre/
+    MK_AboveLowPre = C - PMLow; /// Dollars Above Pre Market Low @link https://www.trade-ideas.com/help/filter/AboveLowPre/
+
+    MK_RD = ( C - TodayLow ) / ( TodayHigh - TodayLow ) * 100; /// Position in Today's Range @link https://www.trade-ideas.com/help/filter/RD/
+    MK_RPD = ( C - YesterdayDailyLow ) / ( YesterdayDailyHigh - YesterdayDailyLow ) * 100; /// Position in Previous Day's Range @link https://www.trade-ideas.com/help/filter/RPD/
+    MK_RPM = ( C - PMLow ) / ( PMHigh - PMLow ) * 100; /// Position in Pre Market Range @link https://www.trade-ideas.com/help/filter/RPM/
+    MK_R5D = ( C - low5day ) / ( high5day - low5day ) * 100; /// Position in 5 Day Range @link https://www.trade-ideas.com/help/filter/R5D/
+    MK_R10D = ( C - low10day ) / ( high10day - low10day ) * 100; /// Position in 10 Day Range @link https://www.trade-ideas.com/help/filter/R10D/
+    MK_R20D = ( C - low20day ) / ( high20day - low20day ) * 100; /// Position in 20 Day Range @link https://www.trade-ideas.com/help/filter/R20D/
+
+// NOTE: MK_R30MO uses 63 trading days for 3 months, etc.
+    MK_R3MO = ( C - low3month ) / ( high3month - low3month ) * 100; /// Position in 3 Month Range @link https://www.trade-ideas.com/help/filter/R3MO/
+    MK_R6MO = ( C - low6month ) / ( high6month - low6month ) * 100; /// Position in 6 Month Range @link https://www.trade-ideas.com/help/filter/R6MO/
+    MK_R9MO = ( C - low9month ) / ( high9month - low9month ) * 100; /// Position in 9 Month Range @link https://www.trade-ideas.com/help/filter/R9MO/
+    MK_RY = ( C - low1year ) / ( high1year - low1year ) * 100; /// Position in 1 Year Range @link https://www.trade-ideas.com/help/filter/RY/
+    MK_R2Y = ( C - low2year ) / ( high2year - low2year ) * 100; /// Position in 2 Year Range @link https://www.trade-ideas.com/help/filter/R2Y/
+    MK_RL = ( C - LLV( L, Barcount ) ) / ( HHV( H, BarCount ) - LLV( L, BarCount ) ) * 100; /// Position in Lifetime Range @link https://www.trade-ideas.com/help/filter/RL/
+
+// RSI Filters
+    MK_RSI1 = RSI( 14 );
+    MK_RSI1 = IIF( Ref( premarketopen, 1 ), Ref( MK_RSI1, -1 ), MK_RSI1 ); /// RSI 1 Minute @link https://www.trade-ideas.com/help/filter/RSI1/
+
+    TimeFrameSet( 2 * inMinute );
+    MK_RSI2 = RSI( 14 );
+    TimeFrameRestore();
+    MK_RSI2 = TimeFrameExpand( MK_RSI2, 2 * inMinute );
+    MK_RSI2 = IIF( Ref( premarketopen, 1 ), Ref( MK_RSI2, -1 ), MK_RSI2 ); /// RSI 2 Minute @link https://www.trade-ideas.com/help/filter/RSI2/
+
+    TimeFrameSet( 5 * inMinute );
+    MK_RSI5 = RSI( 14 );
+    TimeFrameRestore();
+    MK_RSI5 = TimeFrameExpand( MK_RSI5, 5 * inMinute );
+    MK_RSI5 = IIF( Ref( premarketopen, 1 ), Ref( MK_RSI5, -1 ), MK_RSI5 ); /// RSI 5 Minute @link https://www.trade-ideas.com/help/filter/RSI5/
+
+    TimeFrameSet( 15 * inMinute );
+    MK_RSI15 = RSI( 14 );
+    TimeFrameRestore();
+    MK_RSI15 = TimeFrameExpand( MK_RSI15, 15 * inMinute );
+    MK_RSI15 = IIF( Ref( premarketopen, 1 ), Ref( MK_RSI15, -1 ), MK_RSI15 ); /// RSI 15 Minute @link https://www.trade-ideas.com/help/filter/RSI15/
+
+    TimeFrameSet( 60 * inMinute );
+    MK_RSI60 = RSI( 14 );
+    TimeFrameRestore();
+    MK_RSI60 = TimeFrameExpand( MK_RSI60, 60 * inMinute );
+    MK_RSI60 = IIF( Ref( premarketopen, 1 ), Ref( MK_RSI60, -1 ), MK_RSI60 ); /// RSI 60 Minute @link https://www.trade-ideas.com/help/filter/RSI60/
+
+    TimeFrameSet( inDaily );
+    MK_DRSI = RSI( 14 );
+    TimeFrameRestore();
+    MK_DRSI = TimeFrameExpand( MK_DRSI, inDaily );
+    MK_DRSI = IIF( Ref( premarketopen, 1 ), Ref( MK_DRSI, -1 ), MK_DRSI ); /// Daily RSI @link https://www.trade-ideas.com/help/filter/DRSI/
+
+// Position In Bollinger Bands Filters
+    TimeFrameSet( 5 * inMinute );
+    BB_Upper_5min = BBandTop( C, 20, 2 );
+    BB_Lower_5min = BBandBot( C, 20, 2 );
+    TimeFrameRestore();
+    BB_Upper_5min = TimeFrameExpand( BB_Upper_5min, 5 * inMinute );
+    BB_Upper_5min = IIF( Ref( premarketopen, 1 ), Ref( BB_Upper_5min, -1 ), BB_Upper_5min );
+    BB_Lower_5min = TimeFrameExpand( BB_Lower_5min, 5 * inMinute );
+    BB_Lower_5min = IIF( Ref( premarketopen, 1 ), Ref( BB_Lower_5min, -1 ), BB_Lower_5min );
+    MK_Boll5 = 100 * ( C - BB_Lower_5min ) / ( BB_Upper_5min - BB_Lower_5min ); /// Position in 5 Minute Bollinger Bands @link https://www.trade-ideas.com/help/filter/Boll5/
+
+    TimeFrameSet( 15 * inMinute );
+    BB_Upper_15min = BBandTop( C, 20, 2 );
+    BB_Lower_15min = BBandBot( C, 20, 2 );
+    TimeFrameRestore();
+    BB_Upper_15min = TimeFrameExpand( BB_Upper_15min, 15 * inMinute );
+    BB_Upper_15min = IIF( Ref( premarketopen, 1 ), Ref( BB_Upper_15min, -1 ), BB_Upper_15min );
+    BB_Lower_15min = TimeFrameExpand( BB_Lower_15min, 15 * inMinute );
+    BB_Lower_15min = IIF( Ref( premarketopen, 1 ), Ref( BB_Lower_15min, -1 ), BB_Lower_15min );
+    MK_Boll15 = 100 * ( C - BB_Lower_15min ) / ( BB_Upper_15min - BB_Lower_15min ); /// Position in 15 Minute Bollinger Bands @link https://www.trade-ideas.com/help/filter/Boll15/
+
+    TimeFrameSet( 60 * inMinute );
+    BB_Upper_60min = BBandTop( C, 20, 2 );
+    BB_Lower_60min = BBandBot( C, 20, 2 );
+    TimeFrameRestore();
+    BB_Upper_60min = TimeFrameExpand( BB_Upper_60min, 60 * inMinute );
+    BB_Upper_60min = IIF( Ref( premarketopen, 1 ), Ref( BB_Upper_60min, -1 ), BB_Upper_60min );
+    BB_Lower_60min = TimeFrameExpand( BB_Lower_60min, 60 * inMinute );
+    BB_Lower_60min = IIF( Ref( premarketopen, 1 ), Ref( BB_Lower_60min, -1 ), BB_Lower_60min );
+    MK_Boll60 = 100 * ( C - BB_Lower_60min ) / ( BB_Upper_60min - BB_Lower_60min ); /// Position in 60 Minute Bollinger Bands @link https://www.trade-ideas.com/help/filter/Boll60/
+
+    TimeFrameSet( inDaily );
+    BB_Upper_Daily = BBandTop( C, 20, 2 );
+    BB_Lower_Daily = BBandBot( C, 20, 2 );
+    TimeFrameRestore();
+    BB_Upper_Daily = TimeFrameExpand( BB_Upper_Daily, inDaily );
+    BB_Upper_Daily = IIF( Ref( premarketopen, 1 ), Ref( BB_Upper_Daily, -1 ), BB_Upper_Daily );
+    BB_Lower_Daily = TimeFrameExpand( BB_Lower_Daily, inDaily );
+    BB_Lower_Daily = IIF( Ref( premarketopen, 1 ), Ref( BB_Lower_Daily, -1 ), BB_Lower_Daily );
+    MK_Boll = 100 * ( C - BB_Lower_Daily ) / ( BB_Upper_Daily - BB_Lower_Daily ); /// Position in Daily Bollinger Bands @link https://www.trade-ideas.com/help/filter/Boll/
+
+// SMA filters
+    TimeFrameSet( inDaily );
+    SMA_8_Daily = MA( C, 8 );
+    SMA_10_Daily = MA( C, 10 );
+    SMA_20_Daily = MA( C, 20 );
+    SMA_50_Daily = MA( C, 50 );
+    SMA_200_Daily = MA( C, 200 );
+    TimeFrameRestore();
+    SMA_8_Daily = TimeFrameExpand( SMA_8_Daily, inDaily );
+    SMA_10_Daily = TimeFrameExpand( SMA_10_Daily, inDaily );
+    SMA_20_Daily = TimeFrameExpand( SMA_20_Daily, inDaily );
+    SMA_50_Daily = TimeFrameExpand( SMA_50_Daily, inDaily );
+    SMA_200_Daily = TimeFrameExpand( SMA_200_Daily, inDaily );
+    SMA_8_Daily = IIF( Ref( premarketopen, 1 ), Ref( SMA_8_Daily, -1 ), SMA_8_Daily );
+    SMA_10_Daily = IIF( Ref( premarketopen, 1 ), Ref( SMA_10_Daily, -1 ), SMA_10_Daily );
+    SMA_20_Daily = IIF( Ref( premarketopen, 1 ), Ref( SMA_20_Daily, -1 ), SMA_20_Daily );
+    SMA_50_Daily = IIF( Ref( premarketopen, 1 ), Ref( SMA_50_Daily, -1 ), SMA_50_Daily );
+    MK_SMA200 = IIF( Ref( premarketopen, 1 ), Ref( SMA_200_Daily, -1 ), SMA_200_Daily ); /// 200 Day Simple Moving Average @link https://www.trade-ideas.com/help/filter/SMA200/
+
+    SMA_Today = Sum( C, BarsSince( premarketopen ) + 1 ) / ( BarsSince( premarketopen ) + 1 );
+    SMA_8_Expanded = ( ( SMA_8_Daily * 8 * 390 ) + ( SMA_Today * ( BarsSince( premarketopen ) + 1 ) ) ) / ( 8 * 390 + BarsSince( premarketopen ) + 1 );
+    SMA_10_Expanded = ( ( SMA_10_Daily * 10 * 390 ) + ( SMA_Today * ( BarsSince( premarketopen ) + 1 ) ) ) / ( 10 * 390 + BarsSince( premarketopen ) + 1 );
+    SMA_20_Expanded = ( ( SMA_20_Daily * 20 * 390 ) + ( SMA_Today * ( BarsSince( premarketopen ) + 1 ) ) ) / ( 20 * 390 + BarsSince( premarketopen ) + 1 );
+    SMA_50_Expanded = ( ( SMA_50_Daily * 50 * 390 ) + ( SMA_Today * ( BarsSince( premarketopen ) + 1 ) ) ) / ( 50 * 390 + BarsSince( premarketopen ) + 1 );
+    SMA_200_Expanded = ( ( MK_SMA200 * 200 * 390 ) + ( SMA_Today * ( BarsSince( premarketopen ) + 1 ) ) ) / ( 200 * 390 + BarsSince( premarketopen ) + 1 );
+
+    MK_MA8P = 100 * ( C - SMA_8_Expanded ) / SMA_8_Expanded; /// Change from 8 Day SMA Percent @link https://www.trade-ideas.com/help/filter/MA8P/
+    MK_MA8R = ( C - SMA_8_Expanded ) / MK_VWV; /// Change from 8 Day SMA Bars @link https://www.trade-ideas.com/help/filter/MA8R/
+    MK_MA10P = 100 * ( C - SMA_10_Expanded ) / SMA_10_Expanded; /// Change from 10 Day SMA Percent @link https://www.trade-ideas.com/help/filter/MA10P/
+    MK_MA10R = ( C - SMA_10_Expanded ) / MK_VWV; /// Change from 10 Day SMA Bars @link https://www.trade-ideas.com/help/filter/MA10R/
+    MK_MA20P = 100 * ( C - SMA_20_Expanded ) / SMA_20_Expanded; /// Change from 20 Day SMA Percent @link https://www.trade-ideas.com/help/filter/MA20P/
+    MK_MA20R = ( C - SMA_20_Expanded ) / MK_VWV; /// Change from 20 Day SMA Bars @link https://www.trade-ideas.com/help/filter/MA20R/
+    MK_MA50P = 100 * ( C - SMA_50_Expanded ) / SMA_50_Expanded; /// Change from 50 Day SMA Percent @link https://www.trade-ideas.com/help/filter/MA50P/
+    MK_MA50R = ( C - SMA_50_Expanded ) / MK_VWV; /// Change from 50 Day SMA Bars @link https://www.trade-ideas.com/help/filter/MA50R/
+    MK_MA200P = 100 * ( C - SMA_200_Expanded ) / SMA_200_Expanded; /// Change from 200 Day SMA Percent @link https://www.trade-ideas.com/help/filter/MA200P/
+    MK_MA200R = ( C - SMA_200_Expanded ) / MK_VWV; /// Change from 200 Day SMA Bars @link https://www.trade-ideas.com/help/filter/MA200R/
+
+    TimeFrameSet( 2 * inMinute );
+    SMA_5period_2min = MA( C, 5 );
+    SMA_8period_2min = MA( C, 8 );
+    SMA_10period_2min = MA( C, 10 );
+    SMA_20period_2min = MA( C, 20 );
+    SMA_200period_2min = MA( C, 200 );
+    TimeFrameRestore();
+    SMA_5period_2min = TimeFrameExpand( SMA_5period_2min, 2 * inMinute );
+    SMA_8period_2min = TimeFrameExpand( SMA_8period_2min, 2 * inMinute );
+    SMA_10period_2min = TimeFrameExpand( SMA_10period_2min, 2 * inMinute );
+    SMA_20period_2min = TimeFrameExpand( SMA_20period_2min, 2 * inMinute );
+    SMA_200period_2min = TimeFrameExpand( SMA_200period_2min, 2 * inMinute );
+
+    TimeFrameSet( 5 * inMinute );
+    SMA_5period_5min = MA( C, 5 );
+    SMA_8period_5min = MA( C, 8 );
+    SMA_10period_5min = MA( C, 10 );
+    SMA_20period_5min = MA( C, 20 );
+    SMA_200period_5min = MA( C, 200 );
+    TimeFrameRestore();
+    SMA_5period_5min = TimeFrameExpand( SMA_5period_5min, 5 * inMinute );
+    SMA_8period_5min = TimeFrameExpand( SMA_8period_5min, 5 * inMinute );
+    SMA_10period_5min = TimeFrameExpand( SMA_10period_5min, 5 * inMinute );
+    SMA_20period_5min = TimeFrameExpand( SMA_20period_5min, 5 * inMinute );
+    SMA_200period_5min = TimeFrameExpand( SMA_200period_5min, 5 * inMinute );
+
+// NOTE: AK-Eyes has not tested the change from X period Y min sma features, newly added
+    TimeFrameSet( 15 * inMinute );
+    SMA_5period_15min = MA( C, 5 );
+    SMA_8period_15min = MA( C, 8 );
+    SMA_10period_15min = MA( C, 10 );
+    SMA_20period_15min = MA( C, 20 );
+    SMA_130period_15min = MA( C, 130 );
+    SMA_200period_15min = MA( C, 200 );
+    TimeFrameRestore();
+    SMA_5period_15min = TimeFrameExpand( SMA_5period_15min, 15 * inMinute );
+    SMA_8period_15min = TimeFrameExpand( SMA_8period_15min, 15 * inMinute );
+    SMA_10period_15min = TimeFrameExpand( SMA_10period_15min, 15 * inMinute );
+    SMA_20period_15min = TimeFrameExpand( SMA_20period_15min, 15 * inMinute );
+    SMA_130period_15min = TimeFrameExpand( SMA_130period_15min, 15 * inMinute );
+    SMA_200period_15min = TimeFrameExpand( SMA_200period_15min, 15 * inMinute );
+
+    TimeFrameSet( 60 * inMinute );
+    SMA_8period_60min = MA( C, 8 );
+    SMA_10period_60min = MA( C, 10 );
+    SMA_20period_60min = MA( C, 20 );
+    SMA_200period_60min = MA( C, 200 );
+    TimeFrameRestore();
+    SMA_8period_60min = TimeFrameExpand( SMA_8period_60min, 60 * inMinute );
+    SMA_10period_60min = TimeFrameExpand( SMA_10period_60min, 60 * inMinute );
+    SMA_20period_60min = TimeFrameExpand( SMA_20period_60min, 60 * inMinute );
+    SMA_200period_60min = TimeFrameExpand( SMA_200period_60min, 60 * inMinute );
+
+    MK_2SmaLa5 = 100 * ( C - SMA_5period_2min ) / SMA_5period_2min; /// Change from 2 Minute 5 Period SMA Percent @link https://www.trade-ideas.com/help/filter/2SmaLa5/
+    MK_2SmaLa8 = 100 * ( C - SMA_8period_2min ) / SMA_8period_2min; /// Change from 2 Minute 8 Period SMA Percent @link https://www.trade-ideas.com/help/filter/2SmaLa8/
+    MK_2SmaLa10 = 100 * ( C - SMA_10period_2min ) / SMA_10period_2min; /// Change from 2 Minute 10 Period SMA Percent @link https://www.trade-ideas.com/help/filter/2SmaLa10/
+    MK_2SmaLa20 = 100 * ( C - SMA_20period_2min ) / SMA_20period_2min; /// Change from 2 Minute 20 Period SMA Percent @link https://www.trade-ideas.com/help/filter/2SmaLa20/
+    MK_2SmaLa200 = 100 * ( C - SMA_200period_2min ) / SMA_200period_2min; /// Change from 2 Minute 200 Period SMA Percent @link https://www.trade-ideas.com/help/filter/2SmaLa200/
+    MK_5SmaLa5 = 100 * ( C - SMA_5period_5min ) / SMA_5period_5min; /// Change from 5 Minute 5 Period SMA Percent @link https://www.trade-ideas.com/help/filter/5SmaLa5/
+    MK_5SmaLa8 = 100 * ( C - SMA_8period_5min ) / SMA_8period_5min; /// Change from 5 Minute 8 Period SMA Percent @link https://www.trade-ideas.com/help/filter/5SmaLa8/
+    MK_5SmaLa10 = 100 * ( C - SMA_10period_5min ) / SMA_10period_5min; /// Change from 5 Minute 10 Period SMA Percent @link https://www.trade-ideas.com/help/filter/5SmaLa10/
+    MK_5SmaLa20 = 100 * ( C - SMA_20period_5min ) / SMA_20period_5min; /// Change from 5 Minute 20 Period SMA Percent @link https://www.trade-ideas.com/help/filter/5SmaLa20/
+    MK_5SmaLa200 = 100 * ( C - SMA_200period_5min ) / SMA_200period_5min; /// Change from 5 Minute 200 Period SMA Percent @link https://www.trade-ideas.com/help/filter/5SmaLa200/
+    MK_15SmaLa5 = 100 * ( C - SMA_5period_15min ) / SMA_5period_15min; /// Change from 15 Minute 5 Period SMA Percent @link https://www.trade-ideas.com/help/filter/15SmaLa5/
+    MK_15SmaLa8 = 100 * ( C - SMA_8period_15min ) / SMA_8period_15min; /// Change from 15 Minute 8 Period SMA Percent @link https://www.trade-ideas.com/help/filter/15SmaLa8/
+    MK_15SmaLa10 = 100 * ( C - SMA_10period_15min ) / SMA_10period_15min; /// Change from 15 Minute 10 Period SMA Percent @link https://www.trade-ideas.com/help/filter/15SmaLa10/
+    MK_15SmaLa20 = 100 * ( C - SMA_20period_15min ) / SMA_20period_15min; /// Change from 15 Minute 20 Period SMA Percent @link https://www.trade-ideas.com/help/filter/15SmaLa20/
+    MK_15SmaLa130 = 100 * ( C - SMA_130period_15min ) / SMA_130period_15min; /// Change from 15 Minute 130 Period SMA Percent @link https://www.trade-ideas.com/help/filter/15SmaLa130/
+    MK_15SmaLa200 = 100 * ( C - SMA_200period_15min ) / SMA_200period_15min; /// Change from 15 Minute 200 Period SMA Percent @link https://www.trade-ideas.com/help/filter/15SmaLa200/
+    MK_60SmaLa8 = 100 * ( C - SMA_8period_60min ) / SMA_8period_60min; /// Change from 60 Minute 8 Period SMA Percent @link https://www.trade-ideas.com/help/filter/60SmaLa8/
+    MK_60SmaLa10 = 100 * ( C - SMA_10period_60min ) / SMA_10period_60min; /// Change from 60 Minute 10 Period SMA Percent @link https://www.trade-ideas.com/help/filter/60SmaLa10/
+    MK_60SmaLa20 = 100 * ( C - SMA_20period_60min ) / SMA_20period_60min; /// Change from 60 Minute 20 Period SMA Percent @link https://www.trade-ideas.com/help/filter/60SmaLa20/
+    MK_60SmaLa200 = 100 * ( C - SMA_200period_60min ) / SMA_200period_60min; /// Change from 60 Minute 200 Period SMA Percent @link https://www.trade-ideas.com/help/filter/60SmaLa200/
+
+// NOTE: AK-Eyes has not tested the SMA cross over features, newly added
+    MK_2Sma8a20 = 100 * ( SMA_8period_2min - SMA_20period_2min ) / SMA_20period_2min; /// 2 Minute 8/20 SMA Crossover @link https://www.trade-ideas.com/help/filter/2Sma8a20/
+    MK_5Sma8a20 = 100 * ( SMA_8period_5min - SMA_20period_5min ) / SMA_20period_5min; /// 5 Minute 8/20 SMA Crossover @link https://www.trade-ideas.com/help/filter/5Sma8a20/
+    MK_15Sma8a20 = 100 * ( SMA_8period_15min - SMA_20period_15min ) / SMA_20period_15min; /// 15 Minute 8/20 SMA Crossover @link https://www.trade-ideas.com/help/filter/15Sma8a20/
+    MK_60Sma8a20 = 100 * ( SMA_8period_60min - SMA_20period_60min ) / SMA_20period_60min; /// 60 Minute 8/20 SMA Crossover @link https://www.trade-ideas.com/help/filter/60Sma8a20/
+    MK_2Sma20a200 = 100 * ( SMA_20period_2min - SMA_200period_2min ) / SMA_200period_2min; /// 2 Minute 20/200 SMA Crossover @link https://www.trade-ideas.com/help/filter/2Sma20a200/
+    MK_5Sma20a200 = 100 * ( SMA_20period_5min - SMA_200period_5min ) / SMA_200period_5min; /// 5 Minute 20/200 SMA Crossover @link https://www.trade-ideas.com/help/filter/5Sma20a200/
+    MK_15Sma20a200 = 100 * ( SMA_20period_15min - SMA_200period_15min ) / SMA_200period_15min; /// 15 Minute 20/200 SMA Crossover @link https://www.trade-ideas.com/help/filter/15Sma20a200/
+    MK_60Sma20a200 = 100 * ( SMA_20period_60min - SMA_200period_60min ) / SMA_200period_60min; /// 60 Minute 20/200 SMA Crossover @link https://www.trade-ideas.com/help/filter/60Sma20a200/
+}

@@ -1,0 +1,151 @@
+// This file can be included in any AFL code.
+dt = DateTime();
+hr = Hour();
+mn = Minute();
+dy = Day();
+mth = Month();
+yr = Year();
+dn = DateNum();
+bi = BarIndex();
+open_hour = 9;
+open_minute = 30;
+pmopen_hour = 4;
+pmopen_minute = 0;
+MinutesSinceOpen = ( hr * 60 + mn ) - ( open_hour * 60 + open_minute );
+MinutesSincePMopen = (hr * 60 + mn) - (pmopen_hour * 60 + pmopen_minute);
+PreMarket = MinutesSincePMopen >= 0 AND MinutesSinceOpen < 0;
+AfterHours = MinutesSinceOpen > 390 AND MinutesSinceOpen <= 630;
+premarketopen = dn != Ref( dn, -1 );
+afterhoursopen = AfterHours != Ref( AfterHours, -1 ) && dn == Ref( dn, -1 );
+afterhoursclose = Ref(premarketopen, -1);
+lastrthbar = Ref( MinutesSinceOpen == 390, 1 ) || ( MinutesSinceOpen < 390 && Ref( MinutesSinceOpen, 1 ) > 390 ) || ( MinutesSinceOpen < 390 && dn != Ref( dn, 1 ) );
+newday = MinutesSinceOpen == 0 || ( MinutesSinceOpen > 0 && Ref( MinutesSinceOpen, -1 ) < 0 ) || ( MinutesSinceOpen > 0 && dn != Ref( dn, -1 ) );
+
+PMOpen = IIF( ValueWhen( premarketopen, premarketopen AND newday ), Null, ValueWhen( premarketopen, O ) );
+PMHigh = IIF( ValueWhen( premarketopen, premarketopen AND newday ) AND NOT PreMarket, Null,
+         IIF( PreMarket, HighestSince( premarketopen, H ), ValueWhen( Ref( newday, 1 ), HighestSince( premarketopen, H ) ) ) );
+PMLow = IIF( ValueWhen( premarketopen, premarketopen AND newday ) AND NOT PreMarket, Null,
+         IIF( PreMarket, LowestSince( premarketopen, L ), ValueWhen( Ref( newday, 1 ), LowestSince( premarketopen, L ) ) ) );
+PMClose = IIF( ValueWhen( premarketopen, premarketopen AND newday ) AND NOT PreMarket, Null,
+         IIF( PreMarket, C, ValueWhen( Ref( newday, 1 ), C ) ) );
+PMRange = PMHigh - PMLow;
+PMDojiness = IIf( PMRange > 0, ( PMClose - PMOpen ) / ( PMHigh - PMLow ), 0 );
+PMCloseRangePosition = ( PMClose - PMLow ) / PMRange;
+
+TodayOpen = IIF( MinutesSinceOpen >= -1, ValueWhen( newday, O ), Null );
+TodayHigh = IIF( MinutesSinceOpen >= -1, HighestSince( newday, H ), Null);
+TodayLow = IIF( MinutesSinceOpen >= -1, LowestSince( newday, L ), Null);
+TodayClose = IIF( PreMarket, Null,
+             IIF( MinutesSinceOpen > 390, ValueWhen( lastrthbar, C ), C ) );
+RTHVolumeToday = IIf( PreMarket, Null,
+             IIF( MinutesSinceOpen > 390, ValueWhen( lastrthbar, Sum( V, BarsSince( newday) + 1)), Sum( V, BarsSince( newday ) + 1) ) );
+YesterdayDailyOpen = IIF( MinutesSinceOpen >= 390 OR lastrthbar, ValueWhen( lastrthbar, TodayOpen, 2), ValueWhen( lastrthbar, TodayOpen ) );
+YesterdayDailyHigh = IIF( MinutesSinceOpen >= 390 OR lastrthbar, ValueWhen( lastrthbar, HighestSince( newday, H ), 2), ValueWhen( lastrthbar, HighestSince( newday, H ) ) );
+YesterdayDailyLow = IIF( MinutesSinceOpen >= 390 OR lastrthbar, ValueWhen( lastrthbar, LowestSince( newday, L ), 2), ValueWhen( lastrthbar, LowestSince( newday, L ) ) );
+YesterdayDailyClose = IIF( MinutesSinceOpen >= 390 OR lastrthbar, ValueWhen( lastrthbar, C, 2), ValueWhen( lastrthbar, C ) );
+YesterdayDailyVolume = IIF( MinutesSinceOpen >= 390 OR lastrthbar, ValueWhen( lastrthbar, Sum( V, BarsSince( newday ) + 1 ), 2), ValueWhen( lastrthbar, Sum( V, BarsSince( newday ) + 1 ) ) );
+YesterdayDojiness = ( YesterdayDailyClose - YesterdayDailyOpen ) / ( YesterdayDailyHigh - YesterdayDailyLow );
+YesterdayClosePosition = ( YesterdayDailyClose - YesterdayDailyLow ) / ( YesterdayDailyHigh - YesterdayDailyLow ) * 100;
+YesterdayRangePercent = ( YesterdayDailyHigh - YesterdayDailyLow ) / YesterdayDailyLow * 100;
+TodayGap = IIF( MinutesSinceOpen >= -1, TodayOpen - YesterdayDailyClose, Null );
+TodayGapPercent = IIF( MinutesSinceOpen >= -1, TodayGap / YesterdayDailyClose * 100, Null );
+VolumeToday = IIF( Cum(premarketopen) > 0, Sum( V, BarsSince( premarketopen ) + 1), Null );
+NextIsEOD = Ref( Lastrthbar, 1 );
+HOD = HighestSince( newday, H );
+LOD = LowestSince( newday, L );
+
+
+// TwoDaysAgo Variables
+TwoDaysAgoOpen  = ValueWhen(lastrthbar, TodayOpen, 2);
+TwoDaysAgoHigh  = ValueWhen(lastrthbar, HighestSince(newday, H), 2);
+TwoDaysAgoLow   = ValueWhen(lastrthbar, LowestSince(newday, L), 2);
+TwoDaysAgoClose = ValueWhen(lastrthbar, TodayClose, 2);
+
+// ThreeDaysAgo Variables
+ThreeDaysAgoOpen  = ValueWhen(lastrthbar, TodayOpen, 3);
+ThreeDaysAgoHigh  = ValueWhen(lastrthbar, HighestSince(newday, H), 3);
+ThreeDaysAgoLow   = ValueWhen(lastrthbar, LowestSince(newday, L), 3);
+ThreeDaysAgoClose = ValueWhen(lastrthbar, TodayClose, 3);
+
+// FourDaysAgo Variables
+FourDaysAgoOpen  = ValueWhen(lastrthbar, TodayOpen, 4);
+FourDaysAgoHigh  = ValueWhen(lastrthbar, HighestSince(newday, H), 4);
+FourDaysAgoLow   = ValueWhen(lastrthbar, LowestSince(newday, L), 4);
+FourDaysAgoClose = ValueWhen(lastrthbar, TodayClose, 4);
+
+// Gap2DaysAgo
+Gap2DaysAgo = (TwoDaysAgoOpen - ThreeDaysAgoClose) / ThreeDaysAgoClose * 100;
+
+// Inside Day Yesterday
+InsideDay = YesterdayDailyHigh < TwoDaysAgoHigh AND YesterdayDailyLow > TwoDaysAgoLow;
+
+// Above Day 2 High today
+NewDayThreeHigh = TodayHigh > YesterdayDailyHigh;
+
+// Opening range high at 5 minutes
+OpeningRange5High = IIf(MinutesSinceOpen >= 4, ValueWhen(MinutesSinceOpen == 5, HighestSince(newday, H)), Null);
+
+
+//delete theses after exploration
+MinPrice = Param("Min Price", 1.00, 0, 50, 0.10);
+MaxPrice = Param("Max Price", 21.00, 0, 100, 0.10);
+MinGap2DaysAgo = Param("Min Gap 2 Days Ago %", 60, 0, 200, 5);
+RISK = Param("Risk Per Trade", 100, 10, 1000, 10);
+TARGET_R = Param("Target R Multiple", 6, 1, 10, 0.5);
+PriceInRange = C >= MinPrice AND C <= MaxPrice;
+ORBHigh = ValueWhen(MinutesSinceOpen == 5, HOD);
+NewHighAboveORB = HOD > ORBHigh AND MinutesSinceOpen >= 5;
+FirstTradeTime = Param("First Trade Time (Minutes from Open)", 5, -330, 390, 1);
+LatestTradeTime = Param("Latest Trade Time (Minutes from Open)", 60, -330, 390, 1);
+BasicRequirements = PriceInRange AND Gap2DaysAgo AND InsideDay AND NewDayThreeHigh;
+OnTodaysWatchlist = HighestSince(newday, BasicRequirements);
+Trigger = OnTodaysWatchlist
+      AND NewDayThreeHigh 
+      AND NewHighAboveORB 
+      AND MinutesSinceOpen >= FirstTradeTime 
+      AND MinutesSinceOpen < LatestTradeTime;
+      
+BuyPrice = ORBHigh + 0.02;
+StopPrice = LOD - 0.02;
+InitialStopDistance = abs(BuyPrice - StopPrice);
+TargetPrice = BuyPrice + (InitialStopDistance * TARGET_R);
+PositionSize = (RISK / InitialStopDistance) * BuyPrice;
+ShortPrice = 0;
+SellPrice = 0;
+CoverPrice = 0;
+
+//end delete stuff
+
+//_TRACE( "[Ami] Starting backtest for " + Name() + " in thread id " + Status( "ThreadID" ) + " with " + MaxBarCount + " bars" );
+
+function GetGradient( bottomColor, topColor, bottomValue, topValue, value )
+{
+    for( i = 0; i < BarCount; i++ )
+    {
+        percentValue = 0;
+
+        if( value[i] < bottomValue )
+        {
+            percentValue = 0;
+        }
+        else
+            if( value[i] > topValue )
+            {
+                percentValue = 1;
+            }
+            else
+            {
+                percentValue = ( value[i] - bottomValue ) / ( topValue - bottomValue );
+            }
+
+        result[i] = ColorBlend( bottomColor, topColor, percentValue );
+    }
+
+    return result;
+}
+
+#include "C:\Users\jerem\OneDrive\Documents\GitHub\Strategies\mabekit.afl";
+
+// The my_custom_variables.afl file should be use to store your own non Trade-Ideas variables.
+// You can use the supporting variables at the top of this file or the TI_ variables in your formulas.
+//#include "c:\repo_path\my_custom_variables.afl";

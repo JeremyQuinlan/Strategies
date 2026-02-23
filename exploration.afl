@@ -1,0 +1,24 @@
+// Diagnostic Exploration
+#include "C:\Program Files\Amibroker\Formulas\Custom\shared_variables.afl"  // keep your existing include
+
+Filter = 1;  // show all bars
+
+AddColumn(DateTime(), "DateTime", formatDateTime);
+AddColumn(MinutesSinceOpen, "Mins Since Open", 1.0);
+
+
+
+AddColumn(YesterdayDailyHigh, "Yest High", 1.2);
+AddColumn(YesterdayDailyLow, "Yest Low", 1.2);
+AddColumn(TodayHigh, "Today High", 1.2);
+AddColumn(InsideDay, "Inside Day", 1.0);
+AddColumn(NewDayThreeHigh, "New D3 High", 1.0);
+AddColumn(OpeningRange5High, "OR5 High", 1.2);
+AddColumn(OnTodaysWatchlist, "On Watchlist", 1.0);
+
+AddColumn(ORBHigh, "ORB High", 1.2);
+AddColumn(BuyPrice, "Buy Price", 1.2);
+AddColumn(StopPrice, "Stop Price", 1.2);
+AddColumn(InitialStopDistance, "Stop Dist", 1.2);
+AddColumn(TargetPrice, "Target", 1.2);
+AddColumn(PositionSize, "Position Size", 1.2);
