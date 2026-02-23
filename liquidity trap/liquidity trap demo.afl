@@ -11,13 +11,13 @@ MaxTradesPerDay = Param("Max Trades Per Day Per Symbol (0 = unlimited)", 1, 0, 1
 WriteSignalFile = ParamToggle("Write MK Trade Client Signal File", "no|yes", 0);
 TradeClientSignalFile = ParamStr("MK Trade Client Signal File Path", "e:\\temp\\signal_file.csv");
 StrategyCode = ParamStr("Strategy Code", "MabeKit AFL Strategy");
-MinPrice = Param("Min Price", 0.90, 0, 50, 0.01);
-MaxPrice = Param("Max Price", 21.00, 0, 100, 0.01);
+MinPrice = Param("Min Price", 1.00, 0, 50, 0.10);
+MaxPrice = Param("Max Price", 21.00, 0, 100, 0.10);
 MinGap2DaysAgo = Param("Min Gap 2 Days Ago %", 60, 0, 200, 5);
 MinVolume = Param("Min Volume Today", 1000000, 50000, 10000000, 50000);
 Min1MinVol = Param("Min 1m Volume", 20,0000, 5000, 1000000, 1000);
 RISK = Param("Risk Per Trade", 100, 10, 1000, 10);
-TARGET_R = Param("Target R Multiple", 6, 1, 10, 0.5);
+TARGET_R = Param("Target R Multiple", 3, 1, 10, 0.1);
 ExplorationFilterMode = ParamList("Exploration Filter Mode", "NONE|TRIGGER|NEAR_TRIGGER", 2);
 
 // Price range filter
@@ -67,7 +67,9 @@ capture_column_data = 0;
 invalid_today = 0;
 trades_today = 0;
 
-Invalid = 0; //V < 1000000; // include your bad filter threshold
+Invalid = 
+		MK_2Sma8a20 > 0.2050
+		; //V < 1000000; // include your bad filter threshold
 
 for( i = MinBarCount; i <= MaxBarCount; i++ )
 {
@@ -593,7 +595,7 @@ AddColumn(C, "Price", 1.2, colorDefault, IIf(PriceInRange, colorLime, colorPink)
 AddColumn(Gap2DaysAgo, "Gap 2D %", 1.2, colorDefault, IIf(Gap2DaysAgo >= MinGap2DaysAgo, colorLime, colorPink));
 AddColumn(InsideDay, "Inside Day", 1.0, colorDefault, IIf(InsideDay, colorLime, colorPink));
 AddColumn(TwoDaysAgoHigh, "Day2 High", 1.2);
-AddColumn(C > TwoDaysAgoHigh, "Above D2H", 1.0, colorDefault, IIf(C > TwoDaysAgoHigh, colorLime, colorPink));
+AddColumn(C > TwoDaysAgoHigh, "Above D2H", 1.0, colorDefault, IIf(C > TwoDaysAGoHigh, colorLime, colorPink));
 AddColumn(OpeningRange5High, "OR5 High", 1.2);
 AddColumn(HOD > Ref(HOD, -1), "New HOD", 1.0, colorDefault, IIf(HOD > Ref(HOD, -1), colorLime, colorPink));
 SetSortColumns(-2);
